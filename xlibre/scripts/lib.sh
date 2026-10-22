@@ -111,5 +111,17 @@ swap_tree() {
     mv "$keep" "$1/debian/patches/series"
 }
 
+# apply_patches DIR NAME: apply xlibre/patches/NAME/*.diff to a source tree. These
+# are backports of upstream fixes to an older release; a patch that does not apply
+# stops the build (a newer upstream tag may already contain it: delete the patch).
+apply_patches() {
+    local f
+    for f in "$XLIBRE_DIR/patches/$2"/*.diff; do
+        [ -e "$f" ] || continue
+        echo "applying $(basename "$f")"
+        patch -d "$1" -p1 < "$f"
+    done
+}
+
 # meson.build version of a tree
 tree_version() { perl -0ne "print \$1 if /version:\s*'([0-9][^']*)'/" "$1/meson.build"; }

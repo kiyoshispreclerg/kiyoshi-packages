@@ -99,6 +99,11 @@ com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
 * **stable (25.1.x):** idem com `xlibre-xserver-25.1.*` (`STABLE_REF`, hoje 25.1.9),
   dentro do `debian/` de `STABLE_PACKAGING_REF`, o que o NexusSfan tinha para o
   25.1.7 (o `debian/` atual espera arquivos que só existem no 25.2).
+* **patches:** `xlibre/patches/<canal>/*.diff` são aplicados à árvore oficial
+  antes do build (hoje só `stable/0001-lower-libdrm-requirement.diff`: o 25.1
+  exigia libdrm ≥ 2.4.116, o que o Ubuntu 22.04 e o Debian 12 não têm; o 25.2
+  já traz a correção, que é a mesma). Um patch que não aplica para o build:
+  numa tag nova que já o contenha, apague o arquivo.
 * **drivers e `xorgproto`:** a tag mais nova de cada `X11Libre/xf86-*` (hoje
   quase todas `25.0.x`; as do NexusSfan também são) e `xorgproto-2025.1`. Valem
   para os dois canais. Para travar um driver, troque o `latest:...` por uma tag.

@@ -30,6 +30,7 @@ stable|beta)
     step "xlibre-server ($mode) = debian/ @ $pref + $tag"
     echo "xlibre-server($mode) packaging=$(git -C "$src" rev-parse HEAD) code=xserver@$tag($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
+    apply_patches "$src" "$mode"
     swap_version "$src" "${tag##*-}" "XLibre $tag"
     profiles=""
     ;;

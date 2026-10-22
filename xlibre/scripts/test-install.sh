@@ -21,10 +21,10 @@ apt-get install -y --no-install-recommends \
     xserver-xlibre-core xserver-xlibre-input-libinput xserver-xlibre-video-dummy \
     xserver-xlibre-xvfb x11-utils xauth
 apt-get check >/dev/null || fail "apt-get check after install"
-dpkg --audit | grep . && fail "dpkg --audit" || true
+if dpkg --audit | grep .; then fail "dpkg --audit"; fi
 Xorg -version 2>&1 | head -3
 test -x /usr/bin/Xorg || fail "no /usr/bin/Xorg"
-ldd /usr/bin/Xorg | grep 'not found' && fail "Xorg has unresolved libraries" || true
+if ldd /usr/bin/Xorg | grep 'not found'; then fail "Xorg has unresolved libraries"; fi
 xvfb-run -a -s "-screen 0 1280x1024x24" xdpyinfo >/dev/null || fail "Xvfb/xdpyinfo"
 
 # A real Xorg with the dummy driver; it needs no GPU. A failure here is a
@@ -57,7 +57,7 @@ dummy_check xserver-xlibre-core
 if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xlibre-xis-core_*.deb' -print -quit)" ]; then
 step "switch to xlibre-xis-core"
 apt-get install -y --no-install-recommends xlibre-xis-core
-dpkg -s xserver-xlibre-core >/dev/null 2>&1 && fail "xserver-xlibre-core still installed next to xlibre-xis-core"
+if dpkg -s xserver-xlibre-core >/dev/null 2>&1; then fail "xserver-xlibre-core still installed next to xlibre-xis-core"; fi
 dpkg -s xserver-xlibre-input-libinput | grep -q '^Status: install ok installed' || fail "driver removed by the switch"
 apt-get check >/dev/null || fail "apt-get check after switch"
 Xorg -version 2>&1 | head -3
@@ -65,7 +65,7 @@ dummy_check xlibre-xis-core
 
 step "switch back to xserver-xlibre-core"
 apt-get install -y --no-install-recommends xserver-xlibre-core
-dpkg -s xlibre-xis-core >/dev/null 2>&1 && fail "xlibre-xis-core still installed"
+if dpkg -s xlibre-xis-core >/dev/null 2>&1; then fail "xlibre-xis-core still installed"; fi
 apt-get check >/dev/null || fail "apt-get check after switching back"
 
 fi
@@ -73,5 +73,5 @@ fi
 step "purge"
 apt-get purge -y 'xserver-xlibre*' 'xlibre*' >/dev/null
 apt-get autoremove -y >/dev/null
-dpkg --audit | grep . && fail "dpkg --audit after purge" || true
+if dpkg --audit | grep .; then fail "dpkg --audit after purge"; fi
 echo "OK"

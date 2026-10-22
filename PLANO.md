@@ -1,4 +1,12 @@
-# kiyoshi-packages
+# kiyoshi-packages: plano
+
+> **Atualização (22/10/2026):** este é o plano inicial. Duas decisões mudaram:
+> o XiS **não** vai mais em `/opt/xis`: virou o pacote `xlibre-xis-core`, no
+> caminho padrão do sistema, substituto direto do `xserver-xlibre-core` da beta
+> (25.2); e o XLibre upstream entrou, em dois canais (`stable` 25.1, `beta`
+> 25.2), como componentes do apt. As seções 6 e 8 estão superadas por
+> `xlibre/`; o `startxis`/`xis-dm` do desenho antigo foram abandonados.
+
 
 Repositório apt (`.deb`) dos projetos do Kiyoshi, para **Ubuntu 22.04, Ubuntu
 24.04, Debian 12 e Debian 13** (e Devuan 5 e 6, que usam os mesmos pacotes de

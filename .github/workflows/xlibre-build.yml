@@ -1,0 +1,184 @@
+# Builds XLibre (upstream, via NexusSfan's Debian packaging) and xlibre-xis-core
+# (the XiS fork) on each target, in a container of that distro, then installs
+# them in a clean container of the same distro and checks them.
+name: XLibre
+
+on:
+    push:
+        paths: ['xlibre/**', '.github/workflows/xlibre-build.yml']
+    pull_request:
+        paths: ['xlibre/**', '.github/workflows/xlibre-build.yml']
+    workflow_dispatch:
+        inputs:
+            xis_ref:
+                description: 'XiS branch, tag or sha (default: XIS_REF in xlibre/versions.sh)'
+                required: false
+            revision:
+                description: 'XiS release revision (1, 2, ...); empty = git snapshot'
+                required: false
+            only:
+                description: 'Only these sources (space separated names from sources.txt, or xlibre-xis-core); empty = all'
+                required: false
+            release:
+                description: 'Add the result to the apt repository'
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        name: ${{ matrix.channel }} ${{ matrix.name }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 150
+        container:
+            image: ${{ matrix.image }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: stable }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: stable }
+                    - { name: debian-12,    image: "debian:12",    channel: stable }
+                    - { name: debian-13,    image: "debian:13",    channel: stable }
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: beta }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: beta }
+                    - { name: debian-12,    image: "debian:12",    channel: beta }
+                    - { name: debian-13,    image: "debian:13",    channel: beta }
+        defaults:
+            run:
+                shell: bash
+        env:
+            CHANNEL: ${{ matrix.channel }}
+            XIS_REF: ${{ inputs.xis_ref }}
+            XIS_REVISION: ${{ inputs.revision }}
+            ONLY: ${{ inputs.only }}
+        steps:
+            - name: git and certificates (so checkout does a real clone)
+              run: |
+                  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+                      [ -f "$f" ] && sed -i -E 's#https?://(archive|security)\.ubuntu\.com/ubuntu/?#http://azure.archive.ubuntu.com/ubuntu/#g' "$f"
+                  done
+                  apt-get update
+                  apt-get install -y --no-install-recommends git ca-certificates
+            - uses: actions/checkout@v4
+            - run: xlibre/scripts/bootstrap.sh
+            - name: build
+              run: xlibre/scripts/build-all.sh
+            - name: collect the .deb files
+              run: |
+                  # upload/<component>/*.deb  (component = main | stable | beta)
+                  mkdir -p upload
+                  cp -r xlibre-work/debs/* upload/ 2>/dev/null || true
+                  find upload -mindepth 2 -type f -name '*.deb' | while read -r f; do
+                      comp="${f#upload/}"; comp="${comp%%/*}"
+                      mkdir -p "upload-flat/$comp"; cp "$f" "upload-flat/$comp/"
+                  done
+                  rm -rf upload; mv upload-flat upload
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: xlibre-debs-${{ matrix.channel }}-${{ matrix.name }}
+                  path: upload
+                  retention-days: 14
+            - uses: actions/upload-artifact@v4
+              if: ${{ !cancelled() }}
+              with:
+                  name: xlibre-info-${{ matrix.channel }}-${{ matrix.name }}
+                  path: |
+                      xlibre-work/BUILD-INFO
+                      xlibre-work/FAILED
+                  retention-days: 14
+                  if-no-files-found: ignore
+
+    install-test:
+        name: install ${{ matrix.channel }} ${{ matrix.name }}
+        needs: build
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        container:
+            image: ${{ matrix.image }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: stable }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: stable }
+                    - { name: debian-12,    image: "debian:12",    channel: stable }
+                    - { name: debian-13,    image: "debian:13",    channel: stable }
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: beta }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: beta }
+                    - { name: debian-12,    image: "debian:12",    channel: beta }
+                    - { name: debian-13,    image: "debian:13",    channel: beta }
+        defaults:
+            run:
+                shell: bash
+        env:
+            DEBIAN_FRONTEND: noninteractive
+        steps:
+            - name: git and certificates
+              run: |
+                  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+                      [ -f "$f" ] && sed -i -E 's#https?://(archive|security)\.ubuntu\.com/ubuntu/?#http://azure.archive.ubuntu.com/ubuntu/#g' "$f"
+                  done
+                  printf 'Acquire::Retries "5";\n' > /etc/apt/apt.conf.d/80-ci-retries
+                  apt-get update
+                  apt-get install -y --no-install-recommends git ca-certificates
+            - uses: actions/checkout@v4
+            - uses: actions/download-artifact@v4
+              with:
+                  name: xlibre-debs-${{ matrix.channel }}-${{ matrix.name }}
+                  path: debs
+            - run: xlibre/scripts/test-install.sh debs ${{ matrix.channel }}
+
+    release:
+        name: add to the apt repository
+        needs: install-test
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        permissions:
+            contents: write
+        concurrency:
+            group: pool
+            cancel-in-progress: false
+        env:
+            GH_TOKEN: ${{ github.token }}
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  pattern: xlibre-debs-*
+                  path: artifacts
+            - name: upload to the pool Release
+              run: |
+                  # Pool asset names: <file> for component main, <component>--<file> otherwise.
+                  # `main` (xorgproto) is shared: taken from the beta builds only.
+                  gh release view pool -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||
+                      gh release create pool -R "$GITHUB_REPOSITORY" --title pool \
+                          --notes "Todos os .deb do repositório apt. Gerenciado pelos workflows; não edite à mão."
+                  mkdir -p pool
+                  for d in artifacts/xlibre-debs-*; do
+                      channel="$(basename "$d" | cut -d- -f3)"
+                      for comp in "$d"/*/; do
+                          comp="$(basename "$comp")"
+                          [ "$comp" = main ] && [ "$channel" != beta ] && continue
+                          for f in "$d/$comp"/*.deb; do
+                              if [ "$comp" = main ]; then n="$(basename "$f")"; else n="$comp--$(basename "$f")"; fi
+                              cp "$f" "pool/$n"
+                          done
+                      done
+                  done
+                  gh release upload pool -R "$GITHUB_REPOSITORY" --clobber pool/*.deb
+
+    publish:
+        needs: release
+        uses: ./.github/workflows/publish.yml
+        secrets: inherit
+        permissions:
+            contents: read
+            pages: write
+            id-token: write

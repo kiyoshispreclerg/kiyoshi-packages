@@ -26,10 +26,16 @@ rm -rf debs repo-work site; mkdir -p debs repo-work/conf site
 gh release download pool -R "$self" --pattern '*.deb' -D debs
 sed "s/@KEYID@/$keyid/" repo/conf/distributions > repo-work/conf/distributions
 
+# Pool assets are <file>.deb (component main) or stable--<file>.deb / beta--<file>.deb.
 shopt -s nullglob
 for deb in debs/*.deb; do
+    base="$(basename "$deb")"; comp=main
+    case "$base" in
+        stable--*) comp=stable; mv "$deb" "debs/${base#stable--}"; deb="debs/${base#stable--}" ;;
+        beta--*)   comp=beta;   mv "$deb" "debs/${base#beta--}";   deb="debs/${base#beta--}" ;;
+    esac
     suite="$(scripts/suite-of.sh "$deb")"
-    reprepro -b repo-work includedeb "$suite" "$deb"
+    reprepro -b repo-work -C "$comp" includedeb "$suite" "$deb"
 done
 
 mv repo-work/dists repo-work/pool site/ 2>/dev/null || true

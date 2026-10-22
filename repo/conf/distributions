@@ -5,7 +5,7 @@ Label: kiyoshi-packages
 Codename: jammy
 Suite: jammy
 Architectures: amd64
-Components: main
+Components: main stable beta
 Description: Pacotes do Kiyoshi para Ubuntu 22.04
 SignWith: @KEYID@
 
@@ -14,7 +14,7 @@ Label: kiyoshi-packages
 Codename: noble
 Suite: noble
 Architectures: amd64
-Components: main
+Components: main stable beta
 Description: Pacotes do Kiyoshi para Ubuntu 24.04
 SignWith: @KEYID@
 
@@ -23,7 +23,7 @@ Label: kiyoshi-packages
 Codename: bookworm
 Suite: bookworm
 Architectures: amd64
-Components: main
+Components: main stable beta
 Description: Pacotes do Kiyoshi para Debian 12 (e Devuan 5)
 SignWith: @KEYID@
 
@@ -32,6 +32,6 @@ Label: kiyoshi-packages
 Codename: trixie
 Suite: trixie
 Architectures: amd64
-Components: main
+Components: main stable beta
 Description: Pacotes do Kiyoshi para Debian 13 (e Devuan 6)
 SignWith: @KEYID@

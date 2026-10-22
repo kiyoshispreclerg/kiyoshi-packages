@@ -1,7 +1,7 @@
-# Projetos cujos .deb são ingeridos dos GitHub Releases deles (README, seção 4.1).
+# Projetos cujos .deb são ingeridos dos GitHub Releases deles.
 # O ingest pega o último Release de cada um e anexa os assets ao Release
-# `pool` deste repositório. Cada .deb deve ter o alvo na versão (~ubuntu22.04,
-# ~ubuntu24.04, ~debian12, ~debian13).
+# `pool` deste repositório (componente `main`). O alvo (ubuntu22.04, ubuntu24.04,
+# debian12, debian13) vem da versão ou, se faltar, do nome do arquivo.
 #
 # repo:    dono/nome no GitHub
 # assets:  glob dos nomes dos assets a importar
@@ -15,6 +15,15 @@ projects:
     assets: ["*.deb"]
   - name: kiplay
     repo: kiyoshispreclerg/kiplay
+    assets: ["*.deb"]
+  - name: kisword
+    repo: kiyoshispreclerg/kisword
+    assets: ["*.deb"]
+  - name: kiremote
+    repo: kiyoshispreclerg/kiremote
+    assets: ["*.deb"]
+  - name: kidisks
+    repo: kiyoshispreclerg/kidisks
     assets: ["*.deb"]
   - name: kidesktop
     repo: kiyoshispreclerg/kidesktop

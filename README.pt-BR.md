@@ -2,9 +2,9 @@
 
 # kiyoshi-packages
 
-Repositório apt com os programas do Kiyoshi, mais as bibliotecas de que eles
-precisam para rodar em sistemas mais antigos. Tudo é compilado no GitHub para
-cada alvo, assinado e servido pelo GitHub Pages.
+Repositório apt com os programas do Kiyoshi, o XLibre (stable e beta) e as
+bibliotecas de que eles precisam para rodar em sistemas mais antigos. Tudo é
+compilado no GitHub para cada alvo, assinado e servido pelo GitHub Pages.
 
 ## Sistemas suportados
 
@@ -25,36 +25,68 @@ sudo install -d -m 0755 /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg \
     https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages.gpg
 
-# troque SUITE por jammy, noble, bookworm ou trixie
-echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] https://kiyoshispreclerg.github.io/kiyoshi-packages SUITE main" |
+# SUITE: jammy, noble, bookworm ou trixie
+# COMPONENTES: "main" só para os programas; some "stable" ou "beta" (um dos dois) para o XLibre
+echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] https://kiyoshispreclerg.github.io/kiyoshi-packages SUITE main beta" |
     sudo tee /etc/apt/sources.list.d/kiyoshi-packages.list
 
 sudo apt update
 ```
 
-## Pacotes
+## XLibre
 
-| Pacote | O que é |
+O servidor X XLibre, compilado para os quatro sistemas a partir do código
+upstream com o [empacotamento Debian do NexusSfan](https://github.com/xlibre-debian),
+com os mesmos nomes de pacote dele (`xserver-xlibre-core`,
+`xserver-xlibre-input-libinput`, `xserver-xlibre-video-amdgpu`, `xlibre`, ...),
+mais um `x11proto-dev` mais novo.
+
+| Componente | Conteúdo |
 |---|---|
-| `xis-server`, `xis-dev` | O servidor X XiS (um fork do XLibre), instalado em `/opt/xis` ao lado do Xorg do sistema, com a libdrm e o driver libinput de que precisa. Inclui `startxis` e `xis-dm`. |
+| `stable` | XLibre 25.1.x e seus drivers |
+| `beta` | XLibre 25.2.x e seus drivers, e o `xlibre-xis-core` |
+| `main` | o que os dois dividem (`x11proto-dev`) e os programas abaixo |
+
+Ative **um só** entre `stable` e `beta`, não os dois.
+
+### xlibre-xis-core
+
+O `xlibre-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi, baseado no
+25.2) como substituto direto do `xserver-xlibre-core` da beta. Ele fornece,
+conflita e substitui esse pacote: você instala o que preferir e o resto
+(drivers, `xserver-xlibre`) continua funcionando com qualquer um:
+
+```sh
+sudo apt install xserver-xlibre-core    # XLibre beta
+sudo apt install xlibre-xis-core        # XiS: substitui o xserver-xlibre-core
+```
+
+## Programas
+
+| Pacote | |
+|---|---|
 | `kikarinhas` | [kikarinhas](https://github.com/kiyoshispreclerg/kikarinhas) |
 | `kisnitch` | [kisnitch](https://github.com/kiyoshispreclerg/kisnitch) |
 | `kiplay` | [kiplay](https://github.com/kiyoshispreclerg/kiplay) |
+| `kisword` | [kisword](https://github.com/kiyoshispreclerg/kisword) |
+| `kiremote`, `kiremote-gtk`, `kiremote-kidesktop` | [kiremote](https://github.com/kiyoshispreclerg/kiremote) |
+| `kidisks` | [kidisks](https://github.com/kiyoshispreclerg/kidisks) |
 | `kidesktop-core`, `kidesktop-base` | [kidesktop](https://github.com/kiyoshispreclerg/kidesktop) |
+| `obs-studio` | [fork do Kiyoshi](https://github.com/kiyoshispreclerg/obs-studio) |
 
 As versões dos pacotes levam o alvo (por exemplo `0.4.0~ubuntu22.04`), então
 cada sistema recebe um pacote compilado nele.
 
 ## Como funciona
 
-Os projetos compilam seus próprios `.deb` a cada release; os pacotes do XiS são
+Os projetos compilam seus próprios `.deb` a cada release; o XLibre e o XiS são
 compilados neste repositório. Todo `.deb` fica guardado como asset do Release
 `pool`, e o workflow `Publish` reconstrói o repositório inteiro a partir dele
 com `reprepro`, assina e publica no GitHub Pages.
 
-- `xis/`: scripts de build dos pacotes do XiS
+- `xlibre/`: scripts de build do XLibre (stable, beta) e do `xlibre-xis-core`
 - `packages.yml`: projetos cujos releases são importados
 - `scripts/`, `repo/`: ingest e publish
 - `.github/workflows/`: CI
 
-Notas de desenho e planos: [PLANO.md](PLANO.md).
+Notas de desenho: [PLANO.md](PLANO.md).

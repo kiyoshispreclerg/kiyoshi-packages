@@ -44,11 +44,12 @@ names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
 | Component | Contents |
 |---|---|
 | `stable` | XLibre 25.1.x and its drivers |
-| `beta` | XLibre 25.2.x and its drivers, and `xlibre-xis-core` |
+| `beta` | XLibre 25.2.x and its drivers |
 | `main` | what both share (`x11proto-dev`) and the programs below |
 
 Enable **one** of `stable` and `beta`, not both.
 
+<!-- XiS desligado por enquanto (workflow XLibre: build_xis)
 ### xlibre-xis-core
 
 `xlibre-xis-core` is the XiS server (Kiyoshi's XLibre fork, based on 25.2) as a
@@ -60,6 +61,7 @@ with and replaces it, so you install the one you prefer and everything else
 sudo apt install xserver-xlibre-core    # XLibre beta
 sudo apt install xlibre-xis-core        # XiS: replaces xserver-xlibre-core
 ```
+-->
 
 ## Programs
 
@@ -84,7 +86,7 @@ this repository. Every `.deb` is stored as an asset of the `pool` Release, and
 the `Publish` workflow rebuilds the whole repository from it with `reprepro`,
 signs it, and deploys it to GitHub Pages.
 
-- `xlibre/`: build scripts for XLibre (stable, beta) and `xlibre-xis-core`
+- `xlibre/`: build scripts for XLibre (stable, beta)
 - `packages.yml`: projects whose releases are pulled in
 - `scripts/`, `repo/`: ingest and publish
 - `.github/workflows/`: CI

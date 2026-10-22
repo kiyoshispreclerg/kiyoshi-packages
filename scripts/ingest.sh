@@ -21,8 +21,10 @@ target_of_filename() {
     case "$1" in
         *ubuntu-22.04*|*ubuntu22.04*) echo ubuntu22.04 ;;
         *ubuntu-24.04*|*ubuntu24.04*) echo ubuntu24.04 ;;
-        *debian-12*|*debian12*)       echo debian12 ;;
-        *debian-13*|*debian13*)       echo debian13 ;;
+        # Devuan builds are made in the Debian image (daedalus = bookworm,
+        # excalibur = trixie): same package, same suite.
+        *debian-12*|*debian12*|*devuan-daedalus*)  echo debian12 ;;
+        *debian-13*|*debian13*|*devuan-excalibur*) echo debian13 ;;
     esac
 }
 
@@ -74,12 +76,18 @@ for name in $(yq -r '.projects[].name' packages.yml); do
     done
     for deb in "$dir"/*.deb; do
         [ -e "$deb" ] || continue
+        case "$(basename "$deb")" in
+            *ubuntu26.04*|*ubuntu-26.04*)
+                echo "::notice::$name: $(basename "$deb"): alvo sem suite neste repositório; ignorado"; continue ;;
+        esac
         if ! out="$(retag "$deb")"; then
             echo "::warning::$name: $(basename "$deb") não indica o alvo (nem na versão nem no nome); ignorado"; continue
         fi
         b="$(basename "$out")"
+        # (also catches a debian-12 and a devuan-daedalus build of the same release)
         if grep -qx "$b" <<<"$existing"; then echo "   $b já está no pool"; continue; fi
         echo "   + $b -> $("$here/suite-of.sh" "$out")"
         gh release upload pool -R "$self" "$out"
+        existing+=$'\n'"$b"
     done
 done

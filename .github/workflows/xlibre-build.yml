@@ -10,6 +10,10 @@ on:
         paths: ['xlibre/**', '.github/workflows/xlibre-build.yml']
     workflow_dispatch:
         inputs:
+            build_xis:
+                description: 'Also build xlibre-xis-core (XiS) in the beta channel'
+                type: boolean
+                default: false
             xis_ref:
                 description: 'XiS branch, tag or sha (default: XIS_REF in xlibre/versions.sh)'
                 required: false
@@ -55,6 +59,7 @@ jobs:
                 shell: bash
         env:
             CHANNEL: ${{ matrix.channel }}
+            BUILD_XIS: ${{ inputs.build_xis && 'yes' || 'no' }}
             XIS_REF: ${{ inputs.xis_ref }}
             XIS_REVISION: ${{ inputs.revision }}
             ONLY: ${{ inputs.only }}

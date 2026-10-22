@@ -7,7 +7,7 @@ here="$(dirname "${BASH_SOURCE[0]}")"
 mkdir -p "$OUT"; : > "$WORK/BUILD-INFO"
 failed=()
 # XiS alone still needs the x11proto-dev built from xorgproto
-if [ -n "${ONLY:-}" ] && [ "$CHANNEL" = beta ] && [[ " $ONLY " == *" xlibre-xis-core "* ]]; then
+if [ "${BUILD_XIS:-no}" = yes ] && [ -n "${ONLY:-}" ] && [ "$CHANNEL" = beta ] && [[ " $ONLY " == *" xlibre-xis-core "* ]]; then
     ONLY="$ONLY xorgproto"
 fi
 wanted() { [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]; }
@@ -27,7 +27,9 @@ while read -r name repo uref required; do
     fi
 done < "$XLIBRE_DIR/sources.txt"
 
-if [ "$CHANNEL" = beta ] && wanted xlibre-xis-core; then
+# XiS is off until the fork is compatible with the 25.2 release; BUILD_XIS=yes
+# (workflow input build_xis) turns it on.
+if [ "${BUILD_XIS:-no}" = yes ] && [ "$CHANNEL" = beta ] && wanted xlibre-xis-core; then
     "$here/build-server.sh" xis
 fi
 

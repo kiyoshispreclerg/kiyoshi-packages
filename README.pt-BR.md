@@ -45,11 +45,12 @@ mais um `x11proto-dev` mais novo.
 | Componente | Conteúdo |
 |---|---|
 | `stable` | XLibre 25.1.x e seus drivers |
-| `beta` | XLibre 25.2.x e seus drivers, e o `xlibre-xis-core` |
+| `beta` | XLibre 25.2.x e seus drivers |
 | `main` | o que os dois dividem (`x11proto-dev`) e os programas abaixo |
 
 Ative **um só** entre `stable` e `beta`, não os dois.
 
+<!-- XiS desligado por enquanto (workflow XLibre: build_xis)
 ### xlibre-xis-core
 
 O `xlibre-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi, baseado no
@@ -61,6 +62,7 @@ conflita e substitui esse pacote: você instala o que preferir e o resto
 sudo apt install xserver-xlibre-core    # XLibre beta
 sudo apt install xlibre-xis-core        # XiS: substitui o xserver-xlibre-core
 ```
+-->
 
 ## Programas
 

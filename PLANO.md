@@ -107,6 +107,11 @@ com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
 
 ### 0.4 XiS (`xlibre-xis-core`)
 
+> **Desligado por enquanto**: o fork ainda precisa de ajustes para ser
+> compatível com a 25.2. O workflow **XLibre** só o compila com o campo
+> `build_xis` marcado (padrão: desmarcado), e o `test-install.sh` só testa a
+> troca se o `.deb` existir. Os READMEs têm a seção dele comentada.
+
 Sai do mesmo workflow **XLibre**, no canal `beta`: o empacotamento da beta com
 a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
 

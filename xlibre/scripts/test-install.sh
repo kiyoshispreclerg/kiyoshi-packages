@@ -54,9 +54,8 @@ CONF
 }
 dummy_check xserver-xlibre-core
 
-if [ "$channel" = beta ]; then
+if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xlibre-xis-core_*.deb' -print -quit)" ]; then
 step "switch to xlibre-xis-core"
-ls "$debs"/xlibre-xis-core_*.deb >/dev/null || fail "xlibre-xis-core not built"
 apt-get install -y --no-install-recommends xlibre-xis-core
 dpkg -s xserver-xlibre-core >/dev/null 2>&1 && fail "xserver-xlibre-core still installed next to xlibre-xis-core"
 dpkg -s xserver-xlibre-input-libinput | grep -q '^Status: install ok installed' || fail "driver removed by the switch"

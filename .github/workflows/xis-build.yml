@@ -1,0 +1,185 @@
+# Builds XiS into /opt/xis on each target distro, inside a container of that
+# distro, with the same script and pinned inputs (packaging/). The staged tree
+# is uploaded; turning it into .deb files is the next step.
+name: XiS targets
+
+permissions:
+    contents: read
+
+on:
+    push:
+        paths: ['xis/**', '.github/workflows/xis-build.yml']
+    pull_request:
+        paths: ['xis/**', '.github/workflows/xis-build.yml']
+    workflow_dispatch:
+        inputs:
+            xis_ref:
+                description: 'XiS branch, tag or sha to build (default: XIS_REF in xis/versions.sh)'
+                required: false
+            revision:
+                description: 'Release revision (1, 2, ...); empty builds a git snapshot'
+                required: false
+    workflow_call:
+        inputs:
+            xis_ref: { type: string, required: false }
+            revision: { type: string, required: false }
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        name: ${{ matrix.name }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 60
+        container:
+            image: ${{ matrix.image }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04" }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04" }
+                    - { name: debian-12,    image: "debian:12" }
+                    - { name: debian-13,    image: "debian:13" }
+        defaults:
+            run:
+                shell: bash
+        env:
+            DEBIAN_FRONTEND: noninteractive
+            XIS_REF: ${{ inputs.xis_ref }}
+            XIS_REVISION: ${{ inputs.revision }}
+        steps:
+            # git first, so actions/checkout does a real clone, and apt tuned
+            # so a slow mirror can't hang the job.
+            - name: bootstrap apt
+              run: |
+                  # The Ubuntu images point at archive.ubuntu.com, which is slow
+                  # and sometimes stalls; the runners sit on Azure, whose mirror
+                  # is what the runner VMs themselves use. No-op on Debian.
+                  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+                      [ -f "$f" ] && sed -i -E 's#https?://(archive|security)\.ubuntu\.com/ubuntu/?#http://azure.archive.ubuntu.com/ubuntu/#g' "$f"
+                  done
+                  printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' > /etc/apt/apt.conf.d/80-ci-retries
+                  apt-get update
+                  apt-get install -y --no-install-recommends git ca-certificates
+
+            - uses: actions/checkout@v4
+
+            - name: build dependencies
+              run: xis/scripts/install-build-deps.sh
+
+            - name: build xorgproto, libdrm, XiS, libinput driver into /opt/xis
+              run: xis/scripts/build-xis.sh
+
+            - name: smoke test
+              run: xis/scripts/smoke-test.sh
+
+            - name: make .deb packages
+              run: xis/scripts/make-debs.sh
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: xis-debs-${{ matrix.name }}
+                  path: packaging-work/debs/*.deb
+                  retention-days: 14
+
+            - name: pack staged tree
+              if: ${{ !cancelled() }}
+              run: |
+                  [ -d packaging-work/stage ] || exit 0
+                  tar -C packaging-work/stage -czf xis-stage-${{ matrix.name }}.tar.gz .
+                  cp packaging-work/BUILD-INFO xis-stage-${{ matrix.name }}.info 2>/dev/null || true
+
+            - uses: actions/upload-artifact@v4
+              if: ${{ !cancelled() }}
+              with:
+                  name: xis-stage-${{ matrix.name }}
+                  path: |
+                      xis-stage-${{ matrix.name }}.tar.gz
+                      xis-stage-${{ matrix.name }}.info
+                      packaging-work/build/*/meson-logs/meson-log.txt
+                  retention-days: 7
+                  if-no-files-found: ignore
+
+    # Installs the packages on a clean image of the same distro (no build
+    # tools), so the dependencies the packages declare are what the system
+    # actually has to provide, and checks they live next to the distribution's
+    # own Xorg without touching it.
+    install-test:
+        name: install ${{ matrix.name }}
+        needs: build
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        container:
+            image: ${{ matrix.image }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { name: ubuntu-22.04, image: "ubuntu:22.04" }
+                    - { name: ubuntu-24.04, image: "ubuntu:24.04" }
+                    - { name: debian-12,    image: "debian:12" }
+                    - { name: debian-13,    image: "debian:13" }
+        defaults:
+            run:
+                shell: bash
+        env:
+            DEBIAN_FRONTEND: noninteractive
+        steps:
+            - name: bootstrap apt
+              run: |
+                  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+                      [ -f "$f" ] && sed -i -E 's#https?://(archive|security)\.ubuntu\.com/ubuntu/?#http://azure.archive.ubuntu.com/ubuntu/#g' "$f"
+                  done
+                  printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' > /etc/apt/apt.conf.d/80-ci-retries
+                  apt-get update
+                  apt-get install -y --no-install-recommends git ca-certificates
+
+            - uses: actions/checkout@v4
+
+            - uses: actions/download-artifact@v4
+              with:
+                  name: xis-debs-${{ matrix.name }}
+                  path: debs
+
+            - name: install, check, coexist with the distribution's Xorg, purge
+              run: xis/scripts/test-install.sh debs
+
+    # Only for a release build (manual run with a revision): puts the four
+    # xis-server/xis-dev sets in the pool and republishes the repository.
+    release:
+        name: add to pool
+        needs: install-test
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.revision != '' }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        permissions:
+            contents: write
+        concurrency:
+            group: pool
+            cancel-in-progress: false
+        env:
+            GH_TOKEN: ${{ github.token }}
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  pattern: xis-debs-*
+                  path: debs
+                  merge-multiple: true
+            - name: upload to the pool Release
+              run: |
+                  gh release view pool -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||
+                      gh release create pool -R "$GITHUB_REPOSITORY" --title pool \
+                          --notes "Todos os .deb do repositório apt. Gerenciado pelos workflows; não edite à mão."
+                  gh release upload pool -R "$GITHUB_REPOSITORY" --clobber debs/*.deb
+
+    publish:
+        needs: release
+        uses: ./.github/workflows/publish.yml
+        secrets: inherit
+        permissions:
+            contents: read
+            pages: write
+            id-token: write

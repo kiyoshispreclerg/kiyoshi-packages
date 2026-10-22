@@ -1,0 +1,41 @@
+# Rebuilds the whole apt repository from the `pool` Release and deploys it to
+# GitHub Pages. Stateless: nothing from a previous run is reused.
+name: Publish
+
+on:
+    workflow_dispatch:
+    workflow_call:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: pages
+    cancel-in-progress: false
+
+jobs:
+    publish:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 20
+        environment:
+            name: github-pages
+            url: ${{ steps.deploy.outputs.page_url }}
+        env:
+            GH_TOKEN: ${{ github.token }}
+            GITHUB_REPOSITORY: ${{ github.repository }}
+            GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+            GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: install reprepro
+              run: sudo apt-get update && sudo apt-get install -y --no-install-recommends reprepro gnupg
+            - name: build and sign the repository
+              run: scripts/publish.sh
+            - uses: actions/configure-pages@v5
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: site
+            - id: deploy
+              uses: actions/deploy-pages@v4

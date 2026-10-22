@@ -1,0 +1,37 @@
+# One entry per suite. SignWith is filled in by scripts/publish.sh (key id of
+# the repository key imported from the GPG_PRIVATE_KEY secret).
+Origin: kiyoshi-packages
+Label: kiyoshi-packages
+Codename: jammy
+Suite: jammy
+Architectures: amd64
+Components: main
+Description: Pacotes do Kiyoshi para Ubuntu 22.04
+SignWith: @KEYID@
+
+Origin: kiyoshi-packages
+Label: kiyoshi-packages
+Codename: noble
+Suite: noble
+Architectures: amd64
+Components: main
+Description: Pacotes do Kiyoshi para Ubuntu 24.04
+SignWith: @KEYID@
+
+Origin: kiyoshi-packages
+Label: kiyoshi-packages
+Codename: bookworm
+Suite: bookworm
+Architectures: amd64
+Components: main
+Description: Pacotes do Kiyoshi para Debian 12 (e Devuan 5)
+SignWith: @KEYID@
+
+Origin: kiyoshi-packages
+Label: kiyoshi-packages
+Codename: trixie
+Suite: trixie
+Architectures: amd64
+Components: main
+Description: Pacotes do Kiyoshi para Debian 13 (e Devuan 6)
+SignWith: @KEYID@

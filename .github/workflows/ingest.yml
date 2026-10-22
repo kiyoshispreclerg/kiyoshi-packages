@@ -1,0 +1,42 @@
+# Brings the .deb files of the projects listed in packages.yml into the `pool`
+# Release, then republishes the apt repository.
+name: Ingest
+
+on:
+    workflow_dispatch:
+        inputs:
+            only:
+                description: 'Only this project (name in packages.yml); empty = all'
+                required: false
+    repository_dispatch:
+        types: [project-released]   # a project can fire this after its own release
+    schedule:
+        - cron: '17 5 * * *'
+
+permissions:
+    contents: write   # create/upload to the pool Release
+
+concurrency:
+    group: pool
+    cancel-in-progress: false
+
+jobs:
+    ingest:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 20
+        env:
+            GH_TOKEN: ${{ secrets.INGEST_TOKEN || github.token }}   # PAT only if a project repo is private
+            GITHUB_REPOSITORY: ${{ github.repository }}
+            ONLY: ${{ inputs.only || github.event.client_payload.project }}
+        steps:
+            - uses: actions/checkout@v4
+            - run: scripts/ingest.sh
+
+    publish:
+        needs: ingest
+        uses: ./.github/workflows/publish.yml
+        secrets: inherit
+        permissions:
+            contents: read
+            pages: write
+            id-token: write

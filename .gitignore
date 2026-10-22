@@ -1,0 +1,8 @@
+packaging-work/
+debs/
+repo-work/
+site/
+*.gpg.secret
+*.key
+*.asc
+!kiyoshi-packages.asc

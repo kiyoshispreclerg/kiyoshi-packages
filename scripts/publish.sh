@@ -10,7 +10,7 @@ cd "$here/.."
 self="${GITHUB_REPOSITORY:?GITHUB_REPOSITORY not set}"
 : "${GPG_PRIVATE_KEY:?GPG_PRIVATE_KEY secret not set}"
 
-export GNUPGHOME="$(mktemp -d)"; chmod 700 "$GNUPGHOME"
+GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; chmod 700 "$GNUPGHOME"
 trap 'gpgconf --kill gpg-agent 2>/dev/null || true; rm -rf "$GNUPGHOME" debs repo-work' EXIT
 echo allow-loopback-pinentry > "$GNUPGHOME/gpg-agent.conf"
 echo pinentry-mode loopback > "$GNUPGHOME/gpg.conf"

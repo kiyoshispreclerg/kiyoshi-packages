@@ -44,7 +44,7 @@ xis)
     swap_tree "$src" "$tree"
 
     # Rename the core package (not the udeb) in file names and contents.
-    ( cd "$src/debian"
+    ( cd "$src/debian" || exit
       for f in xserver-xlibre-core.*; do
           [ -e "$f" ] && mv "$f" "xlibre-xis-core.${f#xserver-xlibre-core.}"
       done

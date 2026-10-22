@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared helpers; source it.
 set -euo pipefail
 

@@ -35,9 +35,10 @@ sudo apt update
 
 ## XLibre
 
-O servidor X XLibre, compilado para os quatro sistemas a partir do código
-upstream com o [empacotamento Debian do NexusSfan](https://github.com/xlibre-debian),
-com os mesmos nomes de pacote dele (`xserver-xlibre-core`,
+O servidor X XLibre, compilado para os quatro sistemas a partir das tags de
+release oficiais do [X11Libre](https://github.com/X11Libre), com o empacotamento
+`debian/` do [NexusSfan](https://github.com/xlibre-debian) e os mesmos nomes de
+pacote dele (`xserver-xlibre-core`,
 `xserver-xlibre-input-libinput`, `xserver-xlibre-video-amdgpu`, `xlibre`, ...),
 mais um `x11proto-dev` mais novo.
 

@@ -1,31 +1,35 @@
 # Debian source packages built for every target, in this order (each one can
 # need the .deb files of the ones before it). Columns:
-#   name  url  ref  required
-# `required = yes`: a failure stops the job. `no`: it is reported and skipped
-# (a driver that doesn't build on an old distro must not block the rest).
-# Sources are NexusSfan's Debian packaging of XLibre (github.com/xlibre-debian).
-# ref is a branch, tag or sha; the commit actually used goes in BUILD-INFO.
-xorgproto                        https://github.com/xlibre-debian/xorgproto.git                        xlibre/latest  yes
-xlibre-server                    https://github.com/xlibre-debian/xlibre-server.git                    xlibre/latest  yes
-xlibre                           https://github.com/xlibre-debian/xlibre.git                           xlibre/latest  yes
-xserver-xlibre-input-libinput    https://github.com/xlibre-debian/xserver-xlibre-input-libinput.git    xlibre/latest  yes
-xserver-xlibre-input-evdev       https://github.com/xlibre-debian/xserver-xlibre-input-evdev.git       xlibre/latest  no
-xserver-xlibre-input-synaptics   https://github.com/xlibre-debian/xserver-xlibre-input-synaptics.git   xlibre/latest  no
-xserver-xlibre-input-wacom       https://github.com/xlibre-debian/xserver-xlibre-input-wacom.git       xlibre/latest  no
-xserver-xlibre-input-elographics https://github.com/xlibre-debian/xserver-xlibre-input-elographics.git xlibre/latest no
-xserver-xlibre-input-joystick    https://github.com/xlibre-debian/xserver-xlibre-input-joystick.git    xlibre/latest  no
-xserver-xlibre-input-keyboard    https://github.com/xlibre-debian/xserver-xlibre-input-keyboard.git    xlibre/latest  no
-xserver-xlibre-input-mouse       https://github.com/xlibre-debian/xserver-xlibre-input-mouse.git       xlibre/latest  no
-xserver-xlibre-input-void        https://github.com/xlibre-debian/xserver-xlibre-input-void.git        xlibre/latest  no
-xserver-xlibre-input-vmmouse     https://github.com/xlibre-debian/xserver-xlibre-input-vmmouse.git     xlibre/latest  no
-xserver-xlibre-video-amdgpu      https://github.com/xlibre-debian/xserver-xlibre-video-amdgpu.git      xlibre/latest  no
-xserver-xlibre-video-ati         https://github.com/xlibre-debian/xserver-xlibre-video-ati.git         xlibre/latest  no
-xserver-xlibre-video-nouveau     https://github.com/xlibre-debian/xserver-xlibre-video-nouveau.git     xlibre/latest  no
-xserver-xlibre-video-intel       https://github.com/xlibre-debian/xserver-xlibre-video-intel.git       xlibre/latest  no
-xserver-xlibre-video-vmware      https://github.com/xlibre-debian/xserver-xlibre-video-vmware.git      xlibre/latest  no
-xserver-xlibre-video-qxl         https://github.com/xlibre-debian/xserver-xlibre-video-qxl.git         xlibre/latest  no
-xserver-xlibre-video-fbdev       https://github.com/xlibre-debian/xserver-xlibre-video-fbdev.git       xlibre/latest  no
-xserver-xlibre-video-vesa        https://github.com/xlibre-debian/xserver-xlibre-video-vesa.git        xlibre/latest  no
-xserver-xlibre-video-dummy       https://github.com/xlibre-debian/xserver-xlibre-video-dummy.git       xlibre/latest  no
-xserver-xlibre-video-sisusb      https://github.com/xlibre-debian/xserver-xlibre-video-sisusb.git      xlibre/latest  no
-xserver-xlibre-video-voodoo      https://github.com/xlibre-debian/xserver-xlibre-video-voodoo.git      xlibre/latest  no
+#   name  upstream-repo  upstream-ref  required
+# name:          the source package in github.com/xlibre-debian/<name>, whose
+#                debian/ directory is used (xlibre/versions.sh)
+# upstream-repo: repository in github.com/X11Libre whose tree is built; `-` =
+#                the packaging repository has all it needs (metapackage)
+# upstream-ref:  tag, or latest:<regex> for the newest matching tag
+# required:      yes = a failure stops the job; no = reported and skipped (a driver
+#                that doesn't build on an old distro must not block the rest)
+# xlibre-server is special: its ref depends on the channel (versions.sh).
+xorgproto                         mirror.fdo.xorgproto     xorgproto-2025.1                                  yes
+xlibre-server                     xserver                  -                                                 yes
+xlibre                            -                        -                                                 yes
+xserver-xlibre-input-libinput     xf86-input-libinput      latest:xlibre-xf86-input-libinput-[0-9.]+         yes
+xserver-xlibre-input-evdev        xf86-input-evdev         latest:xlibre-xf86-input-evdev-[0-9.]+            no
+xserver-xlibre-input-synaptics    xf86-input-synaptics     latest:xlibre-xf86-input-synaptics-[0-9.]+        no
+xserver-xlibre-input-wacom        xf86-input-wacom         latest:xlibre-xf86-input-wacom-[0-9.]+            no
+xserver-xlibre-input-elographics  xf86-input-elographics   latest:xlibre-xf86-input-elographics-[0-9.]+      no
+xserver-xlibre-input-joystick     xf86-input-joystick      latest:xlibre-xf86-input-joystick-[0-9.]+         no
+xserver-xlibre-input-keyboard     xf86-input-keyboard      latest:xlibre-xf86-input-keyboard-[0-9.]+         no
+xserver-xlibre-input-mouse        xf86-input-mouse         latest:xlibre-xf86-input-mouse-[0-9.]+            no
+xserver-xlibre-input-void         xf86-input-void          latest:xlibre-xf86-input-void-[0-9.]+             no
+xserver-xlibre-input-vmmouse      xf86-input-vmmouse       latest:xlibre-xf86-input-vmmouse-[0-9.]+          no
+xserver-xlibre-video-amdgpu       xf86-video-amdgpu        latest:xlibre-xf86-video-amdgpu-[0-9.]+           no
+xserver-xlibre-video-ati          xf86-video-ati           latest:xlibre-xf86-video-ati-[0-9.]+              no
+xserver-xlibre-video-nouveau      xf86-video-nouveau       latest:xlibre-xf86-video-nouveau-[0-9.]+          no
+xserver-xlibre-video-intel        xf86-video-intel         latest:xlibre-xf86-video-intel-[0-9.]+            no
+xserver-xlibre-video-vmware       xf86-video-vmware        latest:xlibre-xf86-video-vmware-[0-9.]+           no
+xserver-xlibre-video-qxl          xf86-video-qxl           latest:xlibre-xf86-video-qxl-[0-9.]+              no
+xserver-xlibre-video-fbdev        xf86-video-fbdev         latest:xlibre-xf86-video-fbdev-[0-9.]+            no
+xserver-xlibre-video-vesa         xf86-video-vesa          latest:xlibre-xf86-video-vesa-[0-9.]+             no
+xserver-xlibre-video-dummy        xf86-video-dummy         latest:xlibre-xf86-video-dummy-[0-9.]+            no
+xserver-xlibre-video-sisusb       xf86-video-sisusb        latest:xlibre-xf86-video-sisusb-[0-9.]+           no
+xserver-xlibre-video-voodoo       xf86-video-voodoo        latest:xlibre-xf86-video-voodoo-[0-9.]+           no

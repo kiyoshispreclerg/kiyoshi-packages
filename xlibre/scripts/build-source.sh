@@ -1,24 +1,33 @@
 #!/bin/bash
-# build-source.sh NAME URL REF
-# Clone one Debian source package, tag its version with the target, install its
-# build-dependencies (from the distro and from what was built before) and
-# build the binary packages into $OUT/<component>/NAME.
+# build-source.sh NAME UPSTREAM-REPO UPSTREAM-REF
+# Build one source package: the debian/ directory of github.com/xlibre-debian/NAME
+# around the official tree (github.com/X11Libre/UPSTREAM-REPO at UPSTREAM-REF),
+# versioned with the target, with its build-dependencies installed from the
+# distro and from what was built before. Output: $OUT/<component>/NAME/*.deb.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-name="$1"; url="$2"; ref="$3"
+name="$1"; repo="$2"; uref="$3"
 src="$WORK/src/$name"
 comp="$(component_of "$name")"
 dest="$OUT/$comp/$name"
-# stable channel: drivers and metapackage as they were before the 25.2 work
-cutoff=""
-if [ "$CHANNEL" = stable ] && [ "$comp" != main ]; then cutoff="$STABLE_CUTOFF"; fi
 
-step "$name @ $ref"
-mkdir -p "$WORK/src" "$dest"
-git_fetch "$src" "$url" "$ref" "$cutoff"
-echo "$name $url $(git -C "$src" rev-parse HEAD)" >> "$WORK/BUILD-INFO"
+step "$name  (debian/ from $PACKAGING_BASE/$name @ $PACKAGING_REF; code from $repo @ $uref)"
+mkdir -p "$WORK/src"; rm -rf "$dest"; mkdir -p "$dest"
+git_fetch "$src" "$PACKAGING_BASE/$name.git" "$PACKAGING_REF" >/dev/null
+info="$name packaging=$(git -C "$src" rev-parse HEAD)"
+
+if [ "$repo" != - ]; then
+    tree="$WORK/src/tree-$name"
+    tag="$(git_fetch "$tree" "$UPSTREAM_BASE/$repo.git" "$uref")"
+    info="$info code=$repo@$tag($(git -C "$tree" rev-parse HEAD))"
+    swap_tree "$src" "$tree"
+    swap_version "$src" "${tag##*-}" "$repo $tag"
+else
+    ( cd "$src" && dch -b -v "$(dpkg-parsechangelog -l debian/changelog -S Version)~${TARGET}" \
+        -D unstable --force-distribution "Rebuild for ${TARGET}" )
+fi
+echo "$info" >> "$WORK/BUILD-INFO"
 
 adapt_control "$src"
-tag_changelog "$src"
 install_build_deps "$src"
 ( cd "$src" && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b -uc -us -d )
 

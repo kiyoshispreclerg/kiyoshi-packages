@@ -88,16 +88,20 @@ conjunto num container limpo (e testa a troca para o `xlibre-xis-core`) e, só
 com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
 `xlibre/` compila e testa, mas **não publica**.
 
-* **beta (25.2.x):** é a ponta do ramo `xlibre/latest` de cada repositório de
-  `github.com/xlibre-debian/*` (lista e ordem em `xlibre/sources.txt`). Para
-  atualizar, basta rodar o workflow de novo com `release`: a versão sai do
-  `debian/changelog` deles. Para travar uma versão, troque `xlibre/latest` por
-  um sha na terceira coluna de `sources.txt`.
-* **stable (25.1.x):** o servidor é a tag de `X11Libre/xserver` em
-  `STABLE_UPSTREAM_REF` (`xlibre/versions.sh`, hoje `xlibre-xserver-25.1.9`)
-  dentro do empacotamento fixado em `STABLE_PACKAGING_REF`. Para um 25.1.x
-  novo, mude só `STABLE_UPSTREAM_REF`. Os drivers e o metapacote vêm do último
-  commit antes de `STABLE_CUTOFF`; se um driver parar de compilar, ajuste a data.
+* **De onde vem o quê:** o **código** é sempre dos repositórios oficiais
+  `github.com/X11Libre/*`, por tag; do `github.com/xlibre-debian/*`
+  (NexusSfan) vem só a pasta `debian/` (ramo `xlibre/latest`), que é posta em
+  volta da árvore oficial. Em `xlibre/sources.txt`, `latest:<regex>` significa
+  "a tag mais nova cujo nome case com a regex".
+* **beta (25.2.x):** a tag `xlibre-xserver-25.2.*` mais nova de `X11Libre/xserver`
+  (`BETA_REF` em `xlibre/versions.sh`). Quando o upstream lançar a 25.2.3, é só
+  rodar o workflow de novo com `release`: a tag nova é achada sozinha.
+* **stable (25.1.x):** idem com `xlibre-xserver-25.1.*` (`STABLE_REF`, hoje 25.1.9),
+  dentro do `debian/` de `STABLE_PACKAGING_REF`, o que o NexusSfan tinha para o
+  25.1.7 (o `debian/` atual espera arquivos que só existem no 25.2).
+* **drivers e `xorgproto`:** a tag mais nova de cada `X11Libre/xf86-*` (hoje
+  quase todas `25.0.x`; as do NexusSfan também são) e `xorgproto-2025.1`. Valem
+  para os dois canais. Para travar um driver, troque o `latest:...` por uma tag.
 * Drivers marcados `no` em `sources.txt` que falham não travam o resto: o log
   mostra `not built: ...` e um aviso.
 
@@ -106,7 +110,10 @@ com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
 Sai do mesmo workflow **XLibre**, no canal `beta`: o empacotamento da beta com
 a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
 
-* `xis_ref`: ramo, tag ou sha do `xserver` (vazio = `experiments`);
+* `xis_ref`: o ideal é uma **tag** do seu `xserver`, criada na branch de release
+  a partir da mesma tag 25.2 que a beta usa, mais as suas mudanças (por exemplo
+  `xis-25.2.2-1`). Aceita também ramo, sha ou `latest:<regex>` (vazio =
+  `experiments`);
 * `revision`: `1`, `2`, ... para uma versão de release (`2:25.2.0-0xis1~ubuntu22.04`);
   vazio gera um **snapshot** (`-0xis0~git<sha>~alvo`), que sempre perde para um
   release;
@@ -114,8 +121,8 @@ a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
   sem o teste de instalação; ideal para atualizar o XiS sem refazer o XLibre
   inteiro. Com `release` marcado, só o XiS é anexado ao pool.
 
-Receita para publicar uma versão do XiS: dê push no `xserver`, rode **XLibre**
-com `xis_ref` = o commit ou tag, `revision` = próximo número, `only` =
+Receita para publicar uma versão do XiS: crie a tag no `xserver` e dê push, rode
+**XLibre** com `xis_ref` = a tag, `revision` = próximo número, `only` =
 `xlibre-xis-core` e `release` marcado.
 
 ### 0.5 Retirar uma versão

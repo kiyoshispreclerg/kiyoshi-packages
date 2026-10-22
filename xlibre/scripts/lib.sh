@@ -53,23 +53,40 @@ install_build_deps() { # DIR
     ( cd "$1" && apt-get build-dep -y --no-install-recommends ./ )
 }
 
-# git_fetch DIR URL REF [CUTOFF]: shallow checkout of REF; with CUTOFF (a date)
-# the last commit of REF before that date.
+# resolve_ref URL REF -> REF, or for latest:<regex> the newest matching tag
+resolve_ref() {
+    case "$2" in
+    latest:*)
+        local re="${2#latest:}" t
+        t="$(git ls-remote --tags --refs "$1" | sed -n 's#.*refs/tags/##p' | grep -E "^($re)\$" | sort -V | tail -1)"
+        [ -n "$t" ] || die "$1: no tag matches $re"
+        echo "$t" ;;
+    *) echo "$2" ;;
+    esac
+}
+
+# git_fetch DIR URL REF: shallow checkout of REF (branch, tag, sha, latest:<regex>)
+# into DIR. Prints the resolved ref on stdout.
 git_fetch() {
-    local dir="$1" url="$2" ref="$3" cutoff="${4:-}"
+    local dir="$1" url="$2" ref
+    ref="$(resolve_ref "$url" "$3")"
     rm -rf "$dir"
-    if [ -n "$cutoff" ]; then
-        git clone -q --filter=blob:none --no-checkout -b "$ref" "$url" "$dir"
-        local rev
-        rev="$(git -C "$dir" rev-list -1 --before="$cutoff" "origin/$ref")"
-        [ -n "$rev" ] || die "$url: no commit of $ref before $cutoff"
-        git -C "$dir" -c advice.detachedHead=false checkout -q "$rev"
-    else
-        git init -q "$dir"
-        git -C "$dir" remote add origin "$url"
-        git -C "$dir" fetch -q --depth 1 origin "$ref"
-        git -C "$dir" -c advice.detachedHead=false checkout -q FETCH_HEAD
-    fi
+    git init -q "$dir"
+    git -C "$dir" remote add origin "$url"
+    git -C "$dir" fetch -q --depth 1 origin "$ref" >&2
+    git -C "$dir" -c advice.detachedHead=false checkout -q FETCH_HEAD >&2
+    echo "$ref"
+}
+
+# swap_version DIR UPSTREAM_VERSION: add a changelog entry for a tree whose
+# upstream version may differ from the one the packaging was written for. The
+# packaging's own revision (-1+xlibre1, ...) is kept when the version is the same.
+swap_version() {
+    local dir="$1" up="$2" cur ep="" rest new
+    cur="$(dpkg-parsechangelog -l "$dir/debian/changelog" -S Version)"
+    case "$cur" in *:*) ep="${cur%%:*}:"; rest="${cur#*:}" ;; *) rest="$cur" ;; esac
+    if [ "${rest%-*}" = "$up" ]; then new="${cur}~${TARGET}"; else new="${ep}${up}-1~${TARGET}"; fi
+    ( cd "$dir" && dch -b -v "$new" -D unstable --force-distribution "${3:-Upstream $up} for ${TARGET}" )
 }
 
 # swap_tree PACKAGING_DIR TREE_DIR: keep debian/ of the first, put the second's

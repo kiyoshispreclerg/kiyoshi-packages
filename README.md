@@ -35,9 +35,10 @@ sudo apt update
 
 ## XLibre
 
-The XLibre X server, built for all four systems from the upstream source with
-[NexusSfan's Debian packaging](https://github.com/xlibre-debian), with the same
-package names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
+The XLibre X server, built for all four systems from the official
+[X11Libre](https://github.com/X11Libre) release tags, with the `debian/`
+packaging of [NexusSfan](https://github.com/xlibre-debian) and the same package
+names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
 `xserver-xlibre-video-amdgpu`, `xlibre`, ...), plus a newer `x11proto-dev`.
 
 | Component | Contents |

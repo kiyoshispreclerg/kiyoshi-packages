@@ -1,46 +1,46 @@
 #!/bin/bash
-# build-server.sh stable | xis
+# build-server.sh stable | beta | xis
 #
-# stable: xlibre-server 25.1.x. The Debian packaging of 25.1.7 with the upstream
-#         tag from versions.sh swapped in; all its binary packages are published.
+# stable, beta: xlibre-server from the official X11Libre/xserver tag (STABLE_REF,
+#         BETA_REF in versions.sh: the newest 25.1.x / 25.2.x tag) inside
+#         NexusSfan's debian/. All its binary packages are published.
 # xis:    xlibre-xis-core, the XiS fork (25.2 based) as a drop-in for the beta
-#         xserver-xlibre-core: the current packaging with the XiS tree swapped
-#         in and the core package renamed. It Provides/Conflicts/Replaces
-#         xserver-xlibre-core, so the user installs one or the other and the
-#         rest of XLibre (drivers, xserver-xlibre, ...) is satisfied by either.
-#         The other binary packages are built too (dh_missing requires it) but
-#         discarded; only xlibre-xis-core_*.deb is kept.
+#         xserver-xlibre-core: the same packaging with the XiS tree and the core
+#         package renamed. It Provides/Conflicts/Replaces xserver-xlibre-core, so
+#         the user installs one or the other and the rest of XLibre (drivers,
+#         xserver-xlibre, ...) is satisfied by either. The other binary packages
+#         are built too (dh_missing requires it) but discarded; only
+#         xlibre-xis-core_*.deb is kept.
 #
 # Environment (xis): XIS_URL, XIS_REF (versions.sh), XIS_REVISION (release
 # number; empty = snapshot with the git hash in the version).
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-mode="${1:?usage: build-server.sh stable|xis}"
+mode="${1:?usage: build-server.sh stable|beta|xis}"
 src="$WORK/src/xlibre-server-$mode"
 tree="$WORK/src/tree-$mode"
 mkdir -p "$WORK/src"
 
 case "$mode" in
-stable)
-    [ "$CHANNEL" = stable ] || die "stable server only in the stable channel"
-    dest="$OUT/stable/xlibre-server"
-    step "xlibre-server (stable) = packaging $STABLE_PACKAGING_REF + $STABLE_UPSTREAM_REF"
-    git_fetch "$tree" "$STABLE_UPSTREAM_URL" "$STABLE_UPSTREAM_REF"
-    git_fetch "$src" "$STABLE_PACKAGING_URL" "$STABLE_PACKAGING_REF"
-    echo "xlibre-server(stable) $STABLE_UPSTREAM_URL $(git -C "$tree" rev-parse HEAD) (packaging $(git -C "$src" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+stable|beta)
+    [ "$CHANNEL" = "$mode" ] || die "$mode server only in the $mode channel"
+    if [ "$mode" = stable ]; then uref="$STABLE_REF"; pref="$STABLE_PACKAGING_REF"; else uref="$BETA_REF"; pref="$BETA_PACKAGING_REF"; fi
+    dest="$OUT/$mode/xlibre-server"
+    git_fetch "$src" "$PACKAGING_BASE/xlibre-server.git" "$pref" >/dev/null
+    tag="$(git_fetch "$tree" "$SERVER_URL" "$uref")"
+    step "xlibre-server ($mode) = debian/ @ $pref + $tag"
+    echo "xlibre-server($mode) packaging=$(git -C "$src" rev-parse HEAD) code=xserver@$tag($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
-    up="${STABLE_UPSTREAM_REF##*-}"
-    ( cd "$src" && dch -b -v "2:${up}-1~${TARGET}" -D unstable --force-distribution \
-        "XLibre ${STABLE_UPSTREAM_REF} for ${TARGET}" )
+    swap_version "$src" "${tag##*-}" "XLibre $tag"
     profiles=""
     ;;
 xis)
     [ "$CHANNEL" = beta ] || die "XiS only in the beta channel"
     dest="$OUT/beta/xlibre-xis-core"
-    step "xlibre-xis-core = packaging $PACKAGING_REF + XiS $XIS_REF ($XIS_URL)"
-    git_fetch "$tree" "$XIS_URL" "$XIS_REF"
-    git_fetch "$src" "$PACKAGING_URL" "$PACKAGING_REF"
+    git_fetch "$src" "$PACKAGING_BASE/xlibre-server.git" "$BETA_PACKAGING_REF" >/dev/null
+    xref="$(git_fetch "$tree" "$XIS_URL" "$XIS_REF")"
     sha="$(git -C "$tree" rev-parse --short=7 HEAD)"
-    echo "xlibre-xis-core $XIS_URL $(git -C "$tree" rev-parse HEAD) (packaging $(git -C "$src" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+    step "xlibre-xis-core = debian/ @ $BETA_PACKAGING_REF + XiS $xref ($XIS_URL)"
+    echo "xlibre-xis-core packaging=$(git -C "$src" rev-parse HEAD) code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
 
     # Rename the core package (not the udeb) in file names and contents.
@@ -62,7 +62,7 @@ xis)
     [ -n "$up" ] || die "cannot read the version from the XiS meson.build"
     if [ -n "${XIS_REVISION:-}" ]; then rev="0xis$XIS_REVISION"; else rev="0xis0~git$sha"; fi
     ( cd "$src" && dch -b -v "2:${up}-${rev}~${TARGET}" -D unstable --force-distribution \
-        "XiS ${XIS_REF} (${sha}) as xlibre-xis-core" )
+        "XiS ${xref} (${sha}) as xlibre-xis-core" )
     profiles="noudeb"
     ;;
 *) die "unknown mode $mode" ;;

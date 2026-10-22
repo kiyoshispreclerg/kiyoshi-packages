@@ -12,13 +12,13 @@ if [ -n "${ONLY:-}" ] && [ "$CHANNEL" = beta ] && [[ " $ONLY " == *" xlibre-xis-
 fi
 wanted() { [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]; }
 
-while read -r name url ref required; do
+while read -r name repo uref required; do
     case "$name" in ''|'#'*) continue ;; esac
     wanted "$name" || continue
-    if [ "$CHANNEL" = stable ] && [ "$name" = xlibre-server ]; then
-        cmd=("$here/build-server.sh" stable)
+    if [ "$name" = xlibre-server ]; then
+        cmd=("$here/build-server.sh" "$CHANNEL")
     else
-        cmd=("$here/build-source.sh" "$name" "$url" "$ref")
+        cmd=("$here/build-source.sh" "$name" "$repo" "$uref")
     fi
     if ! "${cmd[@]}"; then
         if [ "$required" = yes ]; then die "required source $name failed"; fi

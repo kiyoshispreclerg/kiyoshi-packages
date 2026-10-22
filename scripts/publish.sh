@@ -27,7 +27,10 @@ gh release download pool -R "$self" --pattern '*.deb' -D debs
 sed "s/@KEYID@/$keyid/" repo/conf/distributions > repo-work/conf/distributions
 
 # Pool assets are <file>.deb (component main) or stable--<file>.deb / beta--<file>.deb.
+# The pool keeps every version; the site gets only the newest of each package
+# per suite and component (keeps Pages small; OBS alone is ~450 MB per version).
 shopt -s nullglob
+declare -A best_ver best_file
 for deb in debs/*.deb; do
     base="$(basename "$deb")"; comp=main
     case "$base" in
@@ -35,7 +38,16 @@ for deb in debs/*.deb; do
         beta--*)   comp=beta;   mv "$deb" "debs/${base#beta--}";   deb="debs/${base#beta--}" ;;
     esac
     suite="$(scripts/suite-of.sh "$deb")"
-    reprepro -b repo-work -C "$comp" includedeb "$suite" "$deb"
+    pkg="$(dpkg-deb -f "$deb" Package)"; ver="$(dpkg-deb -f "$deb" Version)"
+    key="$comp|$suite|$pkg"
+    if [ -z "${best_ver[$key]:-}" ] || dpkg --compare-versions "$ver" gt "${best_ver[$key]}"; then
+        best_ver[$key]="$ver"; best_file[$key]="$deb"
+    fi
+done
+for key in "${!best_file[@]}"; do
+    IFS='|' read -r comp suite pkg <<<"$key"
+    echo "publish: $comp/$suite $pkg ${best_ver[$key]}"
+    reprepro -b repo-work -C "$comp" includedeb "$suite" "${best_file[$key]}"
 done
 
 mv repo-work/dists repo-work/pool site/ 2>/dev/null || true

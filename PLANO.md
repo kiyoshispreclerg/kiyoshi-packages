@@ -23,6 +23,114 @@ escrito aqui como decidido está na seção [Decisões em aberto](#decisões-em-
 
 ---
 
+## 0. Operação: criar e atualizar o pool
+
+O **pool** é o Release `pool` deste repositório: uma pasta de arquivos `.deb`
+(assets), que guarda **todas as versões**. O repositório apt que os usuários
+veem é reconstruído do zero a partir dele pelo workflow **Publish**, que
+mantém no site só a versão mais nova de cada pacote por suite e componente
+(o OBS sozinho tem ~450 MB por versão; o Pages não aguenta o histórico).
+
+Nomes dos assets no pool: `<arquivo>.deb` para o componente `main`,
+`stable--<arquivo>.deb` e `beta--<arquivo>.deb` para os componentes `stable` e
+`beta`. A suite vem do `~ubuntu22.04`, `~ubuntu24.04`, `~debian12` ou
+`~debian13` na versão.
+
+Tudo se faz em **Actions → (workflow) → Run workflow**.
+
+### 0.1 Primeira vez
+
+1. Pages: *Settings → Pages → Source: GitHub Actions*.
+2. Segredos `GPG_PRIVATE_KEY` (e `GPG_PASSPHRASE`) em *Settings → Secrets and
+   variables → Actions*; *Workflow permissions* em "Read and write".
+3. Rode **Ingest** (cria o Release `pool`, traz seus programas e já chama o
+   Publish).
+4. Rode **XLibre** com `release` marcado (seção 0.3). Ao final ele chama o Publish.
+5. Confira `https://<usuario>.github.io/kiyoshi-packages/dists/<suite>/Release`
+   e um `apt update` num container de cada alvo.
+
+### 0.2 Seus programas (kikarinhas, kisnitch, kiplay, kisword, kiremote, kidisks, kidesktop e o fork do OBS)
+
+Criar ou atualizar é a mesma coisa:
+
+1. No repositório do projeto, publique um Release novo (tag `v*`; no OBS, a
+   tag da versão). O `release.yml` dele compila os `.deb` dos 4 alvos e os
+   anexa ao Release. **Pré-releases valem**: o ingest pega o Release mais
+   novo, marcado ou não como pré-release.
+2. Traga para o pool, de um destes jeitos:
+   * **Ingest** manual (campo `only` = nome em `packages.yml`, ou vazio para todos);
+   * o **cron diário** do Ingest (05:17 UTC), sem fazer nada;
+   * o projeto avisa na hora, com `repository_dispatch` (precisa de um token com
+     permissão neste repositório):
+     ```sh
+     gh api repos/<usuario>/kiyoshi-packages/dispatches \
+         -f event_type=project-released -f client_payload[project]=kikarinhas
+     ```
+3. O Ingest anexa ao `pool` o que ainda não está lá (pelo nome do arquivo) e
+   chama o Publish. Só assets que casem com `assets:` de `packages.yml` entram
+   (o OBS usa `obs-studio-*-Linux-*.deb`, que deixa de fora os `*-dbgsym-*.ddeb`).
+
+O alvo vem do `~alvo` na versão do `.deb` ou, se não houver, do **nome do
+arquivo** (`ubuntu22.04`, `ubuntu-24.04`, `debian-12`, `debian13-devuan-...`):
+nesse caso o ingest regrava a `Version:` acrescentando `~alvo`, para os quatro
+`.deb` de um release terem nomes diferentes. Arquivo sem alvo reconhecível é
+ignorado com um aviso (o alvo `ubuntu26.04` do kisword cai aqui).
+
+**Projeto novo:** acrescente-o em `packages.yml` (`repo`, `assets`, e `exclude`
+se o Release tiver `.deb` que não deve entrar).
+
+### 0.3 XLibre `stable` e `beta`
+
+Ficam no workflow **XLibre**: compila os 4 alvos nos 2 canais, instala cada
+conjunto num container limpo (e testa a troca para o `xlibre-xis-core`) e, só
+com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
+`xlibre/` compila e testa, mas **não publica**.
+
+* **beta (25.2.x):** é a ponta do ramo `xlibre/latest` de cada repositório de
+  `github.com/xlibre-debian/*` (lista e ordem em `xlibre/sources.txt`). Para
+  atualizar, basta rodar o workflow de novo com `release`: a versão sai do
+  `debian/changelog` deles. Para travar uma versão, troque `xlibre/latest` por
+  um sha na terceira coluna de `sources.txt`.
+* **stable (25.1.x):** o servidor é a tag de `X11Libre/xserver` em
+  `STABLE_UPSTREAM_REF` (`xlibre/versions.sh`, hoje `xlibre-xserver-25.1.9`)
+  dentro do empacotamento fixado em `STABLE_PACKAGING_REF`. Para um 25.1.x
+  novo, mude só `STABLE_UPSTREAM_REF`. Os drivers e o metapacote vêm do último
+  commit antes de `STABLE_CUTOFF`; se um driver parar de compilar, ajuste a data.
+* Drivers marcados `no` em `sources.txt` que falham não travam o resto: o log
+  mostra `not built: ...` e um aviso.
+
+### 0.4 XiS (`xlibre-xis-core`)
+
+Sai do mesmo workflow **XLibre**, no canal `beta`: o empacotamento da beta com
+a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
+
+* `xis_ref`: ramo, tag ou sha do `xserver` (vazio = `experiments`);
+* `revision`: `1`, `2`, ... para uma versão de release (`2:25.2.0-0xis1~ubuntu22.04`);
+  vazio gera um **snapshot** (`-0xis0~git<sha>~alvo`), que sempre perde para um
+  release;
+* `only`: `xlibre-xis-core` compila só o XiS (e o `xorgproto` de que ele precisa),
+  sem o teste de instalação; ideal para atualizar o XiS sem refazer o XLibre
+  inteiro. Com `release` marcado, só o XiS é anexado ao pool.
+
+Receita para publicar uma versão do XiS: dê push no `xserver`, rode **XLibre**
+com `xis_ref` = o commit ou tag, `revision` = próximo número, `only` =
+`xlibre-xis-core` e `release` marcado.
+
+### 0.5 Retirar uma versão
+
+Apague o asset do Release `pool` (*Releases → pool → editar → remover o
+arquivo*) e rode **Publish**. Como o site mostra só a versão mais nova, apagar
+a mais nova faz a anterior voltar.
+
+### 0.6 Quando algo não aparece no `apt`
+
+* Veja o log do Publish: ele lista `publish: <componente>/<suite> <pacote> <versão>` para tudo o que entrou.
+* `apt update` reclamando de assinatura: a chave pública do site vem do segredo
+  `GPG_PRIVATE_KEY`; se a chave mudou, o usuário reinstala o `kiyoshi-packages.gpg`.
+* Pacote sem alvo na versão ou no nome do arquivo: aparece como aviso no Ingest.
+
+---
+
 ## 1. O que entra e o que não entra
 
 | Pacote | Origem | Estado do empacotamento |

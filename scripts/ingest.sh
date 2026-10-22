@@ -37,7 +37,7 @@ retag() {
     dpkg-deb -R "$deb" "$d/x"
     sed -i "s/^Version: .*/Version: ${ver}~${t}/" "$d/x/DEBIAN/control"
     pkg="$(dpkg-deb -f "$deb" Package)"; arch="$(dpkg-deb -f "$deb" Architecture)"
-    dpkg-deb --root-owner-group -Zxz -b "$d/x" "$d/${pkg}_${ver#*:}~${t}_${arch}.deb" >/dev/null
+    dpkg-deb --root-owner-group -Zxz -z3 -b "$d/x" "$d/${pkg}_${ver#*:}~${t}_${arch}.deb" >/dev/null
     echo "$d/${pkg}_${ver#*:}~${t}_${arch}.deb"
 }
 
@@ -56,7 +56,14 @@ for name in $(yq -r '.projects[].name' packages.yml); do
     for g in $(yq -r ".projects[] | select(.name==\"$name\") | .assets[]" packages.yml); do
         args+=(--pattern "$g")
     done
-    if ! gh release download -R "$repo" "${args[@]}" -D "$dir" 2>/dev/null; then
+    # Newest release, pre-releases included (`gh release download` without a
+    # tag takes the "latest" one, which skips pre-releases: every 0.x is one).
+    tag="$(gh release list -R "$repo" -L 1 --json tagName -q '.[0].tagName' 2>/dev/null || true)"
+    if [ -z "$tag" ]; then
+        echo "::notice::$name: sem Release; pulando"; continue
+    fi
+    echo "   release $tag"
+    if ! gh release download "$tag" -R "$repo" "${args[@]}" -D "$dir" 2>/dev/null; then
         echo "::notice::$name: sem Release ou sem assets que casem; pulando"; continue
     fi
     for ex in $(yq -r ".projects[] | select(.name==\"$name\") | .exclude[]?" packages.yml); do

@@ -6,6 +6,10 @@ here="$(dirname "${BASH_SOURCE[0]}")"
 . "$here/lib.sh"
 mkdir -p "$OUT"; : > "$WORK/BUILD-INFO"
 failed=()
+# XiS alone still needs the x11proto-dev built from xorgproto
+if [ -n "${ONLY:-}" ] && [ "$CHANNEL" = beta ] && [[ " $ONLY " == *" xlibre-xis-core "* ]]; then
+    ONLY="$ONLY xorgproto"
+fi
 wanted() { [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]; }
 
 while read -r name url ref required; do

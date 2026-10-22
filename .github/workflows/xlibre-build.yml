@@ -85,6 +85,7 @@ jobs:
                   name: xlibre-debs-${{ matrix.channel }}-${{ matrix.name }}
                   path: upload
                   retention-days: 14
+                  if-no-files-found: ignore
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
@@ -98,6 +99,7 @@ jobs:
     install-test:
         name: install ${{ matrix.channel }} ${{ matrix.name }}
         needs: build
+        if: ${{ inputs.only == '' }}   # a partial build has nothing complete to test
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         container:
@@ -137,8 +139,8 @@ jobs:
 
     release:
         name: add to the apt repository
-        needs: install-test
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+        needs: [build, install-test]
+        if: ${{ !cancelled() && !failure() && github.event_name == 'workflow_dispatch' && inputs.release }}
         runs-on: ubuntu-24.04
         timeout-minutes: 15
         permissions:
@@ -164,6 +166,7 @@ jobs:
                   for d in artifacts/xlibre-debs-*; do
                       channel="$(basename "$d" | cut -d- -f3)"
                       for comp in "$d"/*/; do
+                          [ -d "$comp" ] || continue
                           comp="$(basename "$comp")"
                           [ "$comp" = main ] && [ "$channel" != beta ] && continue
                           for f in "$d/$comp"/*.deb; do
@@ -176,6 +179,7 @@ jobs:
 
     publish:
         needs: release
+        if: ${{ !cancelled() && needs.release.result == 'success' }}
         uses: ./.github/workflows/publish.yml
         secrets: inherit
         permissions:

@@ -29,3 +29,6 @@ projects:
     repo: kiyoshispreclerg/kidesktop
     assets: ["kidesktop-core_*.deb", "kidesktop-base_*.deb"]
     exclude: ["kidesktop_0.0.0*"]
+  - name: obs-studio
+    repo: kiyoshispreclerg/obs-studio
+    assets: ["obs-studio-*-Linux-*.deb"]   # sem os *-dbgsym-*.ddeb

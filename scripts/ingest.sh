@@ -47,6 +47,9 @@ gh release view pool -R "$self" >/dev/null 2>&1 ||
     gh release create pool -R "$self" --title "pool" \
         --notes "Todos os .deb do repositório apt. Gerenciado por scripts/ingest.sh; não edite à mão."
 
+# GitHub rewrites characters it dislikes in asset names (`~` becomes `.`), so
+# names are compared in that normalized form.
+gh_name() { echo "${1//[^A-Za-z0-9._+-]/.}"; }
 existing="$(gh release view pool -R "$self" --json assets -q '.assets[].name')"
 
 for name in $(yq -r '.projects[].name' packages.yml); do
@@ -85,9 +88,9 @@ for name in $(yq -r '.projects[].name' packages.yml); do
         fi
         b="$(basename "$out")"
         # (also catches a debian-12 and a devuan-daedalus build of the same release)
-        if grep -qx "$b" <<<"$existing"; then echo "   $b já está no pool"; continue; fi
+        if grep -qxF "$(gh_name "$b")" <<<"$existing"; then echo "   $b já está no pool"; continue; fi
         echo "   + $b -> $("$here/suite-of.sh" "$out")"
         gh release upload pool -R "$self" "$out"
-        existing+=$'\n'"$b"
+        existing+=$'\n'"$(gh_name "$b")"
     done
 done

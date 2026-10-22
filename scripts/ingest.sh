@@ -1,7 +1,7 @@
 #!/bin/bash
 # Pull the .deb files of the latest Release of each project in packages.yml and
 # attach them to this repository's `pool` Release (created if missing).
-# Needs: gh (authenticated, GH_TOKEN), yq, dpkg-deb. Run from the repo root.
+# Needs: gh (authenticated, GH_TOKEN), yq, jq, dpkg-deb. Run from the repo root.
 #
 # The target (suite) of a .deb comes from its version when it carries a tag
 # (~ubuntu22.04, ~ubuntu24.04, ~debian12, ~debian13). If it doesn't, it is read
@@ -56,9 +56,11 @@ for name in $(yq -r '.projects[].name' packages.yml); do
     for g in $(yq -r ".projects[] | select(.name==\"$name\") | .assets[]" packages.yml); do
         args+=(--pattern "$g")
     done
-    # Newest release, pre-releases included (`gh release download` without a
-    # tag takes the "latest" one, which skips pre-releases: every 0.x is one).
-    tag="$(gh release list -R "$repo" -L 1 --json tagName -q '.[0].tagName' 2>/dev/null || true)"
+    # Newest stable release; only if the project has none yet, the newest
+    # pre-release (`gh release download` without a tag would only ever take the
+    # stable one, and fail for projects still at 0.x).
+    rels="$(gh release list -R "$repo" -L 100 --json tagName,isPrerelease,isDraft 2>/dev/null || true)"
+    tag="$(jq -r '[.[] | select(.isDraft | not)] | (map(select(.isPrerelease | not)) + map(select(.isPrerelease)))[0].tagName // empty' <<<"${rels:-[]}")"
     if [ -z "$tag" ]; then
         echo "::notice::$name: sem Release; pulando"; continue
     fi

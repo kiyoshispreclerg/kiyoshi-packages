@@ -55,8 +55,10 @@ Criar ou atualizar é a mesma coisa:
 
 1. No repositório do projeto, publique um Release novo (tag `v*`; no OBS, a
    tag da versão). O `release.yml` dele compila os `.deb` dos 4 alvos e os
-   anexa ao Release. **Pré-releases valem**: o ingest pega o Release mais
-   novo, marcado ou não como pré-release.
+   anexa ao Release. O ingest pega o Release **estável** mais novo; só se o
+   projeto ainda não tiver nenhum estável (tudo 0.x, por exemplo) ele pega o
+   pré-release mais novo. Assim que sair um estável, os pré-releases deixam de
+   ser considerados (as versões antigas continuam no pool).
 2. Traga para o pool, de um destes jeitos:
    * **Ingest** manual (campo `only` = nome em `packages.yml`, ou vazio para todos);
    * o **cron diário** do Ingest (05:17 UTC), sem fazer nada;

@@ -85,8 +85,9 @@ se o Release tiver `.deb` que não deve entrar).
 
 Ficam no workflow **XLibre**: compila os 4 alvos nos 2 canais, instala cada
 conjunto num container limpo (e testa a troca para o `xlibre-xis-core`) e, só
-com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
-`xlibre/` compila e testa, mas **não publica**.
+com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Ele só roda
+quando você o dispara à mão (um push não o inicia): faça isso quando houver tag
+nova do upstream.
 
 * **De onde vem o quê:** o **código** é sempre dos repositórios oficiais
   `github.com/X11Libre/*`, por tag. A pasta `debian/` (empacotamento do

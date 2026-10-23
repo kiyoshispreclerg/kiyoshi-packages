@@ -89,9 +89,11 @@ com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
 `xlibre/` compila e testa, mas **não publica**.
 
 * **De onde vem o quê:** o **código** é sempre dos repositórios oficiais
-  `github.com/X11Libre/*`, por tag; do `github.com/xlibre-debian/*`
-  (NexusSfan) vem só a pasta `debian/` (ramo `xlibre/latest`), que é posta em
-  volta da árvore oficial. Em `xlibre/sources.txt`, `latest:<regex>` significa
+  `github.com/X11Libre/*`, por tag. A pasta `debian/` (empacotamento do
+  NexusSfan, `github.com/xlibre-debian/*`) fica **copiada neste repositório**,
+  em `xlibre/packaging/`, e é posta em volta da árvore oficial; os builds não
+  dependem de ele continuar no ar. Para atualizar a cópia:
+  `xlibre/scripts/vendor-packaging.sh [nome...]`, revisar o `git diff` e dar commit. Em `xlibre/sources.txt`, `latest:<regex>` significa
   "a tag mais nova cujo nome case com a regex".
 * **beta (25.2.x):** a tag `xlibre-xserver-25.2.*` mais nova de `X11Libre/xserver`
   (`BETA_REF` em `xlibre/versions.sh`). Quando o upstream lançar a 25.2.3, é só

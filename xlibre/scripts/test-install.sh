@@ -22,7 +22,7 @@ apt-get install -y --no-install-recommends \
     xserver-xlibre-xvfb x11-utils xauth
 apt-get check >/dev/null || fail "apt-get check after install"
 if dpkg --audit | grep .; then fail "dpkg --audit"; fi
-Xorg -version 2>&1 | head -3
+Xorg -version 2>&1 | sed -n '1,3p'
 test -x /usr/bin/Xorg || fail "no /usr/bin/Xorg"
 if ldd /usr/bin/Xorg | grep 'not found'; then fail "Xorg has unresolved libraries"; fi
 xvfb-run -a -s "-screen 0 1280x1024x24" xdpyinfo >/dev/null || fail "Xvfb/xdpyinfo"
@@ -60,7 +60,7 @@ apt-get install -y --no-install-recommends xlibre-xis-core
 if dpkg -s xserver-xlibre-core >/dev/null 2>&1; then fail "xserver-xlibre-core still installed next to xlibre-xis-core"; fi
 dpkg -s xserver-xlibre-input-libinput | grep -q '^Status: install ok installed' || fail "driver removed by the switch"
 apt-get check >/dev/null || fail "apt-get check after switch"
-Xorg -version 2>&1 | head -3
+Xorg -version 2>&1 | sed -n '1,3p'
 dummy_check xlibre-xis-core
 
 step "switch back to xserver-xlibre-core"

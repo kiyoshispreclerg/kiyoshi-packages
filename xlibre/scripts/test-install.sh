@@ -8,6 +8,8 @@ export DEBIAN_FRONTEND=noninteractive
 debs="$(cd "${1:?usage: test-install.sh DEBDIR CHANNEL}" && pwd)"
 channel="${2:?channel}"
 fail() { echo "FAIL: $*" >&2; exit 1; }
+# installed PKG: really installed (a removed package with config files left is not)
+installed() { [ "$(dpkg-query -W -f='${db:Status-Status}' "$1" 2>/dev/null)" = installed ]; }
 step() { printf '\n==== %s\n' "$*"; }
 
 apt-get update -qq
@@ -57,15 +59,15 @@ dummy_check xserver-xlibre-core
 if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xlibre-xis-core_*.deb' -print -quit)" ]; then
 step "switch to xlibre-xis-core"
 apt-get install -y --no-install-recommends xlibre-xis-core
-if dpkg -s xserver-xlibre-core >/dev/null 2>&1; then fail "xserver-xlibre-core still installed next to xlibre-xis-core"; fi
-dpkg -s xserver-xlibre-input-libinput | grep -q '^Status: install ok installed' || fail "driver removed by the switch"
+if installed xserver-xlibre-core; then fail "xserver-xlibre-core still installed next to xlibre-xis-core"; fi
+installed xserver-xlibre-input-libinput || fail "driver removed by the switch"
 apt-get check >/dev/null || fail "apt-get check after switch"
 Xorg -version 2>&1 | sed -n '1,3p'
 dummy_check xlibre-xis-core
 
 step "switch back to xserver-xlibre-core"
 apt-get install -y --no-install-recommends xserver-xlibre-core
-if dpkg -s xlibre-xis-core >/dev/null 2>&1; then fail "xlibre-xis-core still installed"; fi
+if installed xlibre-xis-core; then fail "xlibre-xis-core still installed"; fi
 apt-get check >/dev/null || fail "apt-get check after switching back"
 
 fi

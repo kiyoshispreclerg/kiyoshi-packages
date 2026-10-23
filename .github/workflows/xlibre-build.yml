@@ -155,6 +155,7 @@ jobs:
             cancel-in-progress: false
         env:
             GH_TOKEN: ${{ github.token }}
+            ONLY: ${{ inputs.only }}
         steps:
             - uses: actions/download-artifact@v4
               with:
@@ -174,6 +175,8 @@ jobs:
                           [ -d "$comp" ] || continue
                           comp="$(basename "$comp")"
                           [ "$comp" = main ] && [ "$channel" != beta ] && continue
+                          # a partial run (only=...) must not replace the shared xorgproto
+                          [ "$comp" = main ] && [ -n "$ONLY" ] && continue
                           for f in "$d/$comp"/*.deb; do
                               if [ "$comp" = main ]; then n="$(basename "$f")"; else n="$comp--$(basename "$f")"; fi
                               cp "$f" "pool/$n"

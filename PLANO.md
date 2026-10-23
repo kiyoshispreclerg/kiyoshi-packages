@@ -126,16 +126,23 @@ a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
   a partir da mesma tag 25.2 que a beta usa, mais as suas mudanças (por exemplo
   `xis-25.2.2-1`). Aceita também ramo, sha ou `latest:<regex>` (vazio =
   `experiments`);
-* `revision`: `1`, `2`, ... para uma versão de release (`2:25.2.0-0xis1~ubuntu22.04`);
-  vazio gera um **snapshot** (`-0xis0~git<sha>~alvo`), que sempre perde para um
-  release;
+* `revision`: o número N do XiS sobre a **mesma versão do upstream**. A versão
+  sai `2:<upstream>-<rev. do empacotamento>xis<N>~alvo`, por exemplo
+  `2:25.2.2-1xis2~ubuntu22.04`: fica acima do `xserver-xlibre-core` de mesma
+  versão (`2:25.2.2-1~...`), cresce a cada N, e uma 25.2.3 do upstream fica acima de
+  todas. Vazio gera um **snapshot** (`...-1xis0~git<sha>~alvo`), que perde para
+  qualquer N >= 1. A versão do upstream é a do `meson.build` da árvore do XiS,
+  então a tag do fork precisa continuar dizendo `25.2.2`;
 * `only`: `xlibre-xis-core` compila só o XiS (e o `xorgproto` de que ele precisa),
   sem o teste de instalação; ideal para atualizar o XiS sem refazer o XLibre
   inteiro. Com `release` marcado, só o XiS é anexado ao pool.
 
+O upstream não é recompilado nesse caso: o XiS se atualiza na mesma versão do
+upstream, quantas vezes você quiser, só incrementando `revision`.
+
 Receita para publicar uma versão do XiS: crie a tag no `xserver` e dê push, rode
 **XLibre** com `xis_ref` = a tag, `revision` = próximo número, `only` =
-`xlibre-xis-core` e `release` marcado.
+`xlibre-xis-core`, `build_xis` e `release` marcado.
 
 ### 0.5 Retirar uma versão
 

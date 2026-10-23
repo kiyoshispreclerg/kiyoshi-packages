@@ -58,10 +58,16 @@ xis)
           s/(Package: xlibre-xis-core\n.*?) xserver-xlibre-common \(>= \$\{source:Version\}\)/$1 xserver-xlibre-common/s;
       ' control )
 
-    # Version: 2:<upstream>-0xis<rev>~<target>  (snapshot: 0xis0~git<sha>~<target>)
+    # Version: 2:<upstream>-<packaging rev>xis<N>~<target>, e.g. 2:25.2.2-1xis2~jammy.
+    # Same upstream version and Debian revision as xserver-xlibre-core, plus the
+    # XiS revision N: it sorts above the upstream package of that version, rises
+    # with every N, and any later upstream version (25.2.3) is above all of them.
+    # A snapshot (no XIS_REVISION) is N=0 with the git hash.
     up="$(tree_version "$src")"
     [ -n "$up" ] || die "cannot read the version from the XiS meson.build"
-    if [ -n "${XIS_REVISION:-}" ]; then rev="0xis$XIS_REVISION"; else rev="0xis0~git$sha"; fi
+    cur="$(dpkg-parsechangelog -l "$src/debian/changelog" -S Version)"
+    prel="${cur##*-}"; prel="${prel%%[!0-9]*}"; prel="${prel:-1}"
+    if [ -n "${XIS_REVISION:-}" ]; then rev="${prel}xis${XIS_REVISION}"; else rev="${prel}xis0~git${sha}"; fi
     ( cd "$src" && dch -b -v "2:${up}-${rev}~${TARGET}" -D unstable --force-distribution \
         "XiS ${xref} (${sha}) as xlibre-xis-core" )
     profiles="noudeb"

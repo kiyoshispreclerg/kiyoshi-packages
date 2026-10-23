@@ -1,0 +1,20 @@
+From 25.2 (include/meson.build): pass compiler.has_member's `prefix` as one string
+instead of a list. A list is only accepted by Meson >= 1.1; the 25.1 tree failed to
+configure on Ubuntu 22.04 (Meson 0.61) and Debian 12 (Meson 1.0): "compiler.has_member
+keyword argument 'prefix' was of type array[str] but should have been str".
+The 25.2 releases already do this.
+
+--- a/include/meson.build
++++ b/include/meson.build
+@@ -203,8 +203,9 @@
+   'BSD44SOCKETS',
+   cc.has_member(
+      'struct sockaddr_in', 'sin_len',
+-     prefix: ['#include <sys/types.h>', '#include <sys/socket.h>',
+-              '#include <netinet/in.h>'],
++     prefix: '''#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>''',
+   )  ? '1' : false,
+   description: 'Define to 1 if `struct sockaddr_in\' has a `sin_len\' member',
+ )

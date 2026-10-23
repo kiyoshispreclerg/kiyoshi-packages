@@ -92,7 +92,10 @@ com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Um push em
   `github.com/X11Libre/*`, por tag. A pasta `debian/` (empacotamento do
   NexusSfan, `github.com/xlibre-debian/*`) fica **copiada neste repositório**,
   em `xlibre/packaging/`, e é posta em volta da árvore oficial; os builds não
-  dependem de ele continuar no ar. Para atualizar a cópia:
+  dependem de ele continuar no ar. O campo `Maintainer` dos pacotes que
+  publicamos é o seu (`MAINTAINER` em `xlibre/scripts/lib.sh`) e o dele fica
+  como `XSBC-Original-Maintainer`; `debian/copyright` e o histórico do
+  `changelog` não são alterados. Para atualizar a cópia:
   `xlibre/scripts/vendor-packaging.sh [nome...]`, revisar o `git diff` e dar commit. Em `xlibre/sources.txt`, `latest:<regex>` significa
   "a tag mais nova cujo nome case com a regex".
 * **beta (25.2.x):** a tag `xlibre-xserver-25.2.*` mais nova de `X11Libre/xserver`

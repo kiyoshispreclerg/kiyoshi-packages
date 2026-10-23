@@ -10,7 +10,11 @@ CHANNEL="${CHANNEL:?CHANNEL (stable|beta) not set}"
 . "$XLIBRE_DIR/versions.sh"
 REPO="${REPO:-$WORK/localrepo}"    # flat apt repo of everything built so far
 export DEBIAN_FRONTEND=noninteractive
-export DEBEMAIL="${DEBEMAIL:-kiyoshi_pip@protonmail.com}" DEBFULLNAME="${DEBFULLNAME:-kiyoshi-packages}"
+# Who the packages we publish are maintained by (the Debian packaging we start
+# from is credited as XSBC-Original-Maintainer; its copyright files stay as they are).
+MAINTAINER="${MAINTAINER:-Kiyoshi Spreclerg <kiyoshi_pip@protonmail.com>}"
+VCS_URL="${VCS_URL:-https://github.com/kiyoshispreclerg/kiyoshi-packages}"
+export DEBEMAIL="${DEBEMAIL:-kiyoshi_pip@protonmail.com}" DEBFULLNAME="${DEBFULLNAME:-Kiyoshi Spreclerg}"
 
 # TARGET: ubuntu22.04 | ubuntu24.04 | debian12 | debian13 (the tag put in versions)
 . /etc/os-release
@@ -44,7 +48,13 @@ tag_changelog() { # DIR  [extra text]
 # Drop build-dependencies that a target does not have. Only the ones known to
 # be missing on old releases are touched; anything else must fail loudly.
 adapt_control() { # DIR
-    local c="$1/debian/control"
+    local c="$1/debian/control" orig
+    # Maintainer: us; the original one is kept as XSBC-Original-Maintainer
+    orig="$(sed -n 's/^Maintainer: //p' "$c" | head -1)"
+    if [ -n "$orig" ] && [ "$orig" != "$MAINTAINER" ]; then
+        sed -i "0,/^Maintainer: .*/s||Maintainer: $MAINTAINER\nXSBC-Original-Maintainer: $orig|" "$c"
+    fi
+    sed -i -e "s|^Vcs-Git: .*|Vcs-Git: $VCS_URL.git|" -e "s|^Vcs-Browser: .*|Vcs-Browser: $VCS_URL|" "$c"
     if ! apt-cache policy systemd-dev 2>/dev/null | grep -q 'Candidate: [^(]'; then
         sed -i '/^ *systemd-dev\b/d' "$c"
     fi

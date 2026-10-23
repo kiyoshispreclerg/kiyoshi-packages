@@ -1,0 +1,25 @@
+xserver-xlibre-video-fbdev (2:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:45:46 -0800
+
+xserver-xlibre-video-fbdev (1:0.5.1.2-1) unstable; urgency=medium
+
+  * New upstream version 0.5.1.2
+  * debian/rules: Specify xorg-module-dir
+
+ -- apebl <a@pebl.cc>  Sun, 28 Sep 2025 14:24:16 +0000
+
+xserver-xlibre-video-fbdev (1:0.5.1.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * debian/gbp.conf: Use DEP-14 style branches
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:13:00 +0000
+
+xserver-xlibre-video-fbdev (1:0.5.1.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

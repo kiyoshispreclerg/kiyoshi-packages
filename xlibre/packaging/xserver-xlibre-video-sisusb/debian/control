@@ -1,0 +1,37 @@
+Source: xserver-xlibre-video-sisusb
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 10),
+ quilt,
+ pkg-config,
+ xserver-xlibre-dev (>= 2:1.9.4),
+ x11proto-video-dev,
+ x11proto-xext-dev,
+ x11proto-xinerama-dev,
+ x11proto-core-dev,
+ x11proto-fonts-dev,
+ x11proto-randr-dev,
+ x11proto-render-dev,
+ xutils-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/X11Libre
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-sisusb.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-sisusb
+
+Package: xserver-xlibre-video-sisusb
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-sisusb (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- SiS USB display driver
+ This package provides the driver for SiS USB-attached video devices.
+ .
+ This package is built from the XLibre xf86-video-sisusb driver module.
+Conflicts:
+ xserver-xorg-video-sisusb,

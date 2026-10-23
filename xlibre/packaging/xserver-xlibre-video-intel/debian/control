@@ -1,0 +1,60 @@
+Source: xserver-xlibre-video-intel
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ pkg-config,
+ xserver-xlibre-dev (>= 2:21.1),
+ x11proto-dev,
+ libx11-dev,
+ libdrm-dev (>= 2.4.23),
+ libgl1-mesa-dev | libgl-dev,
+ libpciaccess-dev (>= 0.8.0+git20071002),
+ libxvmc-dev (>= 2:1.0.12),
+ libxext-dev,
+ libxfixes-dev,
+ libx11-xcb-dev,
+ libxcb-util0-dev,
+ libxcb-dri2-0-dev,
+ libudev-dev [linux-any],
+ quilt,
+ xutils-dev (>= 1:7.5+4),
+ valgrind [amd64 arm64 armhf i386 mips mipsel mips64 mips64el powerpc ppc64 ppc64el s390x x32],
+ libxinerama-dev,
+ libxrandr-dev,
+ libxdamage-dev,
+ libxcursor-dev,
+ libxtst-dev,
+ libxrender-dev,
+ libpixman-1-dev,
+ libxss-dev,
+Standards-Version: 4.6.0
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-intel.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-intel
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-intel
+Architecture: amd64 i386 kfreebsd-amd64 kfreebsd-i386 x32
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-intel (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- Intel i8xx, i9xx display driver
+ This package provides the driver for the Intel i8xx and i9xx family
+ of chipsets, including i810, i815, i830, i845, i855, i865, i915, i945
+ and i965 series chips.
+ .
+ This package also provides XvMC (XVideo Motion Compensation) drivers
+ for i810/i815 and i9xx and newer chipsets.
+ .
+ This package is built from the XLibre xf86-video-intel driver module.
+ .
+ The use of this driver is discouraged if your GPU is new enough (ca.
+ 2007 and newer). You can try uninstalling this driver and let the
+ server use its built-in modesetting driver instead.
+Conflicts:
+ xserver-xorg-video-intel,

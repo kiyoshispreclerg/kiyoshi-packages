@@ -1,0 +1,44 @@
+Source: xserver-xlibre-input-mouse
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 8),
+ dh-autoreconf,
+ pkg-config,
+ xserver-xlibre-dev,
+ x11proto-dev,
+ quilt,
+ xutils-dev (>= 1:7.5+4)
+Standards-Version: 3.9.8
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-mouse.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-mouse
+
+Package: xserver-xlibre-input-mouse
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ ${xinpdriver:Provides},
+ xserver-xorg-input-mouse (= ${binary:Version})
+Description: XLibre X server -- mouse input driver
+ This package provides the driver for mouse input devices.
+ This package is built from the XLibre xf86-input-keyboard driver module.
+Conflicts: xserver-xorg-input-mouse
+
+Package: xserver-xlibre-input-mouse-udeb
+XC-Package-Type: udeb
+Section: debian-installer
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ ${xinpdriver:Provides},
+ xserver-xorg-input-mouse-udeb (= ${binary:Version})
+Description: XLibre X server -- mouse input driver
+ This is a udeb, or a microdeb, for the debian-installer.
+Conflicts: xserver-xorg-input-mouse-udeb

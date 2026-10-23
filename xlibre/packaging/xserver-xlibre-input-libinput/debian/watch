@@ -1,0 +1,2 @@
+version=4
+https://github.com/X11Libre/xf86-input-libinput/tags .*/xlibre-xf86-input-libinput-(.*)@ARCHIVE_EXT@

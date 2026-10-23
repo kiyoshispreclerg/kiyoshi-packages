@@ -1,0 +1,33 @@
+xserver-xlibre-video-vmware (2:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- apebl <a@pebl.cc>  Sat, 20 Dec 2025 16:50:16 -0800
+
+xserver-xlibre-video-vmware (1:13.4.0.3-2) unstable; urgency=medium
+
+  * Add conditional build-dep libxatracker-dev
+
+ -- apebl <a@pebl.cc>  Thu, 09 Oct 2025 13:00:22 +0000
+
+xserver-xlibre-video-vmware (1:13.4.0.3-1) unstable; urgency=medium
+
+  * New upstream version 13.4.0.3
+  * debian/rules: Specify xorg-module-dir
+  * control: Drop libxatracker-dev from build-depends, since mesa dropped it.
+  * control: Migrate to pkgconf.
+
+ -- apebl <a@pebl.cc>  Sun, 28 Sep 2025 14:42:20 +0000
+
+xserver-xlibre-video-vmware (1:13.4.0.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * debian/gbp.conf: Use DEP-14 style branches
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:13:08 +0000
+
+xserver-xlibre-video-vmware (1:13.4.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

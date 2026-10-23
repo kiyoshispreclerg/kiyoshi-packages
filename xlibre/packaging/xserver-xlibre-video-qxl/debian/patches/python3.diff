@@ -1,0 +1,84 @@
+diff --git a/scripts/Xspice b/scripts/Xspice
+index 927dcb1..78d0794 100755
+--- a/scripts/Xspice
++++ b/scripts/Xspice
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ """
+ Xspice
+diff --git a/tests/xspice_audio_test.py b/tests/xspice_audio_test.py
+index 455c1aa..786028c 100755
+--- a/tests/xspice_audio_test.py
++++ b/tests/xspice_audio_test.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ from time import sleep
+ from xspice_audio_test_helper import produce_audio
+diff --git a/tests/xspice_audio_test_helper.py b/tests/xspice_audio_test_helper.py
+index fbe3a54..14dacc3 100755
+--- a/tests/xspice_audio_test_helper.py
++++ b/tests/xspice_audio_test_helper.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ # coding: utf-8
+ import os
+ import sys
+@@ -7,12 +7,12 @@ from math import sin, pi
+ 
+ def produce_audio(basedir):
+     filename = os.path.join(basedir, 'testaudio')
+-    os.system(u'mkfifo %s' % filename)
++    os.system('mkfifo %s' % filename)
+     if not os.path.exists(basedir):
+-        print "missing fifo dir %s" % repr(basedir)
++        print ("missing fifo dir %s" % repr(basedir))
+     f=open(filename,'w')
+     singen = lambda f: lambda t: (int(min(32767, 32768*sin(t*f/1000.0*pi))), int(min(32767, 32768*sin(t*f/1000.0*pi))))
+-    f.write(''.join( struct.pack('hh', *singen(40)(t)) for t in xrange(44100) ) )
++    f.write(''.join( struct.pack('hh', *singen(40)(t)) for t in range(44100) ) )
+     os.unlink(filename)
+ 
+ if __name__ == '__main__':
+diff --git a/tests/xspice_util.py b/tests/xspice_util.py
+index 409a0fc..8e00add 100755
+--- a/tests/xspice_util.py
++++ b/tests/xspice_util.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ 
+ import os
+ from time import sleep
+@@ -15,15 +15,15 @@ class Process(object):
+     @classmethod
+     def atexit(clazz):
+         for p in reversed(clazz.processes):
+-            print "child %s" % p.pid
++            print ("child %s" % p.pid)
+         if False:
+             slp = subprocess.Popen(['/usr/bin/sleep', '10000'])
+-            print "wait on %d" % slp.pid
++            print ("wait on %d" % slp.pid)
+             slp.wait()
+         if len(clazz.processes) == 0:
+             return
+         for p in reversed(clazz.processes):
+-            print "kill %s" % p.pid
++            print ("kill %s" % p.pid)
+             try:
+                 p.kill()
+             except:
+@@ -33,7 +33,7 @@ class Process(object):
+         sleep(1)
+         for p in reversed(clazz.processes):
+             if not p.poll():
+-                print "terminate %s" % p.pid
++                print ("terminate %s" % p.pid)
+                 try:
+                     p.terminate()
+                 except:

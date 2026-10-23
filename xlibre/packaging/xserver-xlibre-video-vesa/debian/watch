@@ -1,0 +1,2 @@
+version=4
+https://github.com/X11Libre/xf86-video-vesa/tags .*/xlibre-xf86-video-vesa-(.*)@ARCHIVE_EXT@

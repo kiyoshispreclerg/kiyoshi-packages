@@ -1,0 +1,35 @@
+Source: xserver-xlibre-video-dummy
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ quilt,
+ pkg-config,
+ xserver-xlibre-dev (>= 2:21.1),
+ x11proto-dev,
+ xutils-dev
+Standards-Version: 4.6.0
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-dummy.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-dummy
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-dummy
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-dummy (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- dummy display driver
+ This package provides a 'dummy' display driver, which does not actually
+ display anything.
+ .
+ More information about XLibre can be found at:
+ <URL:https://www.github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-dummy driver module.
+Conflicts:
+ xserver-xorg-video-dummy,

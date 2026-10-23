@@ -90,6 +90,14 @@ swap_version() {
     ( cd "$dir" && dch -b -v "$new" -D unstable --force-distribution "${3:-Upstream $up} for ${TARGET}" )
 }
 
+# use_packaging NAME DIR: a fresh DIR holding the vendored Debian packaging of
+# NAME (xlibre/packaging/NAME, see vendor-packaging.sh).
+use_packaging() {
+    [ -d "$XLIBRE_DIR/packaging/$1" ] || die "no vendored packaging for $1 (run vendor-packaging.sh)"
+    rm -rf "$2"; mkdir -p "$2"
+    cp -a "$XLIBRE_DIR/packaging/$1/." "$2/"
+}
+
 # swap_tree PACKAGING_DIR TREE_DIR: keep debian/ of the first, put the second's
 # files around it (a different upstream under the same Debian packaging).
 swap_tree() {

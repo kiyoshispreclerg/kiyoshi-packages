@@ -1,0 +1,78 @@
+Source: xserver-xlibre-video-ati
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 12),
+ quilt,
+ pkg-config,
+ xserver-xlibre-dev (>= 2:1.15.99),
+ libgl-dev,
+ libgbm-dev,
+ libdrm-dev (>= 2.4.89) [!hurd-any],
+ libudev-dev [linux-any],
+ x11proto-dev,
+ xutils-dev (>= 1:7.5+4)
+Standards-Version: 4.6.2
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-ati.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-ati
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-ati
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+ xserver-xlibre-video-radeon
+Suggests:
+ xserver-xorg-video-r128,
+ xserver-xorg-video-mach64
+Provides:
+ xserver-xorg-video-ati (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- AMD/ATI display driver wrapper
+ This package provides the 'ati' driver for the AMD/ATI Mach64, Rage128,
+ Radeon, FireGL, FireMV, FirePro and FireStream series. This driver is
+ actually a wrapper that loads one of the 'mach64', 'r128' or 'radeon'
+ sub-drivers depending on the hardware.
+ These sub-drivers are brought through package dependencies.
+ .
+ Users of Rage, Mach, or Radeon boards may remove this package only if
+ they use Driver "r128", "mach64", or "radeon" in /etc/X11/xlibre.conf
+ instead of relying on autodetection.
+ .
+ More information about XLibre can be found at:
+ <URL:https://www.github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-ati driver module.
+Conflicts:
+ xserver-xorg-video-ati,
+
+Package: xserver-xlibre-video-radeon
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends}
+Provides:
+ xserver-xorg-video-radeon (= ${binary:Version}),
+ ${xviddriver:Provides}
+Suggests: firmware-amd-graphics
+Description: XLibre X server -- AMD/ATI Radeon display driver
+ This package provides the 'radeon' driver for the AMD/ATI cards. The
+ following chips should be supported: R100, RV100, RS100, RV200, RS200,
+ RS250, R200, RV250, RV280, RS300, RS350, RS400/RS480, R300, R350, R360,
+ RV350, RV360, RV370, RV380, RV410, R420, R423/R430, R480/R481,
+ RV505/RV515/RV516/RV550, R520, RV530/RV560, RV570/R580,
+ RS600/RS690/RS740, R600, RV610/RV630, RV620/RV635, RV670, RS780/RS880,
+ RV710/RV730, RV740/RV770/RV790, CEDAR, REDWOOD, JUNIPER, CYPRESS,
+ HEMLOCK, PALM, SUMO/SUMO2, BARTS, TURKS, CAICOS, CAYMAN, ARUBA, TAHITI,
+ PITCAIRN, VERDE, OLAND, HAINAN, BONAIRE, KABINI, MULLINS, KAVERI, HAWAII.
+ .
+ More information about XLibre can be found at:
+ <URL:https://www.github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-ati driver module.
+Conflicts:
+ xserver-xorg-video-radeon,

@@ -1,0 +1,42 @@
+#!/usr/bin/make -f
+
+DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+VIDEODEP = $(shell cat /usr/share/xserver-xorg/videodrvdep 2>/dev/null)
+
+override_dh_auto_build:
+	dh_auto_build -- V=1
+
+# Install in debian/tmp to retain control through dh_install:
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/tmp
+
+# Kill *.la files, and forget no-one:
+override_dh_install:
+	find debian/tmp -name '*.la' -delete
+	-rm -r debian/tmp/usr/share
+	install -D -m 644 ./examples/spiceqxl.xorg.conf.example debian/tmp/etc/X11/spiceqxl.xorg.conf
+	dh_install
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+# That's a plugin, use appropriate warning level:
+override_dh_shlibdeps:
+	dh_shlibdeps -- --warnings=6
+
+override_dh_xsf_substvars:
+	echo "xviddriver:Depends=$(VIDEODEP)" >> debian/xserver-xlibre-xspice.substvars
+	echo "xviddriver:Depends=$(VIDEODEP)" >> debian/xserver-xlibre-video-qxl.substvars
+	echo "xviddriver:Provides=xlibre-driver-video" >> debian/xserver-xlibre-video-qxl.substvars
+	dh_xsf_substvars
+
+# Enable Xspice support
+override_dh_auto_configure:
+ifeq ($(DEB_HOST_GNU_TYPE), x86_64-linux-gnu)
+	dh_auto_configure -- --libdir=/usr/lib --enable-xspice --with-xorg-module-dir=/usr/lib/xorg/modules
+else
+	dh_auto_configure -- --libdir=/usr/lib --with-xorg-module-dir=/usr/lib/xorg/modules
+endif
+
+%:
+	dh $@ --with quilt,xsf,python3 --builddirectory=build/

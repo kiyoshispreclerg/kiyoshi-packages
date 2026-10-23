@@ -1,0 +1,25 @@
+xserver-xlibre-input-wacom (1:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:41:07 -0800
+
+xserver-xlibre-input-wacom (1.2.3.2-1) unstable; urgency=medium
+
+  * New upstream version 1.2.3.2
+  * patches: Drop x11-fix-wcmLog, fixed upstream
+
+ -- apebl <a@pebl.cc>  Sat, 23 Aug 2025 00:51:01 +0000
+
+xserver-xlibre-input-wacom (1.2.3.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * d/gbp.conf: Use xlibre/latest for debian-branch
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:12:56 +0000
+
+xserver-xlibre-input-wacom (1.2.3.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

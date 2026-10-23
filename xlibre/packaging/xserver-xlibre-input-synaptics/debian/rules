@@ -1,0 +1,37 @@
+#!/usr/bin/make -f
+
+XDEP = $(shell cat /usr/share/xserver-xorg/xinputdep)
+XSUB = debian/xserver-xlibre-input-synaptics.substvars
+
+# Install in debian/tmp to retain control through dh_install:
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/tmp
+
+# Kill *.la files, and forget no-one:
+override_dh_install:
+	find debian/tmp -name '*.la' -delete
+	dh_install
+
+# That's a plugin, use appropriate warning level:
+override_dh_shlibdeps:
+	dh_shlibdeps -- --warnings=6
+
+override_dh_xsf_substvars:
+	echo "xinpdriver:Depends=$(XDEP)" >> $(XSUB)
+	echo "xinpdriver:Provides=xlibre-driver-input" >> $(XSUB)
+#	dh_xsf_substvars
+
+%:
+	dh $@ --with quilt,xsf --builddirectory=build/
+
+# Debug package:
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--libdir=\$${exec_prefix}/lib \
+		--with-xorg-module-dir=/usr/lib/xorg/modules
+
+override_dh_auto_test:
+	dh_auto_test -- VERBOSE=1
+
+override_dh_missing:
+	dh_missing --fail-missing

@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	$(MAKE) -C xsf-docs clean
+
+override_dh_auto_build:
+	$(MAKE) -C xsf-docs
+
+execute_before_dh_install:
+	$(MAKE) -C xsf-docs install DESTDIR=$(CURDIR)/debian/xserver-xlibre/usr/share/doc/xorg
+
+override_dh_installinit-indep:
+	dh_installinit -pxlibre-x11-common --name=x11-common
+
+execute_after_dh_fixperms-indep:
+	chmod 755 debian/xlibre-x11-common/etc/X11/Xreset
+	chmod 755 debian/xlibre-x11-common/etc/X11/Xsession
+
+# vim:set noet ai sts=8 sw=8 tw=0:

@@ -1,0 +1,11 @@
+xserver-xlibre-input-mouse (2:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:37:46 -0800
+
+xserver-xlibre-input-mouse (1:1.9.6-1) unstable; urgency=medium
+
+  * Initial XLibre import
+
+ -- NexusSfan <nexussfan@duck.com>  Tue, 16 Dec 2025 16:25:47 -0800

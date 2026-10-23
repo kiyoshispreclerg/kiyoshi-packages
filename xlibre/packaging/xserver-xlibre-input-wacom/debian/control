@@ -1,0 +1,39 @@
+Source: xserver-xlibre-input-wacom
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ libudev-dev,
+ libx11-dev,
+ libxi-dev,
+ libxinerama-dev,
+ libxrandr-dev,
+ pkgconf,
+ systemd-dev,
+ xserver-xlibre-dev,
+ xutils-dev,
+Standards-Version: 4.7.0
+Homepage: https://github.com/X11Libre
+Vcs-Git: https://github.com/xlibre-debian/xf86-input-wacom.git
+Vcs-Browser: https://github.com/xlibre-debian/xf86-input-wacom
+
+Package: xserver-xlibre-input-wacom
+Section: x11
+Architecture: linux-any
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
+ ${xinpdriver:Depends},
+Suggests:
+ xinput,
+Provides:
+ xserver-xorg-input-wacom (= ${binary:Version}),
+ ${xinpdriver:Provides},
+Replaces:
+ wacom-tools (<< 0.10.0),
+Conflicts:
+ xserver-xorg-input-wacom,
+ wacom-tools (<< 0.10.0),
+Description: XLibre X server -- Wacom input driver
+ This package provides the XLibre driver for Wacom tablet devices.

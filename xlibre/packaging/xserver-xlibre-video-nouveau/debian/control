@@ -1,0 +1,39 @@
+Source: xserver-xlibre-video-nouveau
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ pkgconf,
+ xserver-xlibre-dev (>= 2:21.1),
+ x11proto-dev,
+ libdrm-dev,
+ libudev-dev,
+ xutils-dev,
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/X11Libre
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-nouveau.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-nouveau
+
+Package: xserver-xlibre-video-nouveau
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Recommends: libgl1-mesa-dri
+Suggests: firmware-misc-nonfree
+Provides:
+ xserver-xorg-video-nouveau (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- Nouveau display driver
+ This driver for the XLibre X server (see xserver-xlibre for a further description)
+ provides support for NVIDIA Riva, TNT, GeForce, and Quadro cards.
+ .
+ This package provides 2D support including EXA acceleration, Xv and
+ RandR.  3D functionality is provided by the libgl1-mesa-dri package.
+ .
+ This package is built from the XLibre xf86-video-nouveau driver.
+Conflicts:
+ xserver-xorg-video-nouveau,

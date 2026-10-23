@@ -1,0 +1,70 @@
+Source: xserver-xlibre-input-libinput
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ libinput-dev,
+ libudev-dev,
+ pkgconf,
+ quilt,
+ x11proto-dev (>= 2021.5),
+ xserver-xlibre-dev,
+ xutils-dev,
+Standards-Version: 4.6.0
+Homepage: https://github.com/X11Libre
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-libinput.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-libinput
+
+Package: xserver-xlibre-input-libinput
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ xserver-xorg-input-libinput (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- libinput input driver
+ This package provides the driver for input devices using libinput library.
+ It can handle keyboards, mice and touchpads, and essentially replaces the
+ separate -evdev and -synaptics drivers.
+ .
+ This package is built from the XLibre xf86-input-libinput driver module.
+Conflicts:
+ xserver-xorg-input-libinput,
+
+Package: xserver-xlibre-input-libinput-dev
+Section: libdevel
+Architecture: all
+Multi-Arch: foreign
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: XLibre X server -- libinput input driver (development headers)
+ This package provides the development headers for the libinput input driver
+ found in xserver-xlibre-input-libinput. Non-developers likely have little use
+ for this package.
+ .
+ This package is built from the XLibre xf86-input-libinput driver module.
+Provides:
+ xserver-xorg-input-libinput-dev (= ${binary:Version}),
+Conflicts:
+ xserver-xorg-input-libinput-dev,
+
+Package: xserver-xlibre-input-libinput-udeb
+XC-Package-Type: udeb
+Section: debian-installer
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+ udev-udeb,
+Provides:
+ xserver-xorg-input-libinput-udeb (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- libinput input driver
+ This is a udeb, or a microdeb, for the debian-installer.
+Conflicts:
+ xserver-xorg-input-libinput-udeb,

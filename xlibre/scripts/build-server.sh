@@ -2,8 +2,8 @@
 # build-server.sh stable | beta | xis
 #
 # stable, beta: xlibre-server from the official X11Libre/xserver tag (STABLE_REF,
-#         BETA_REF in versions.sh: the newest 25.1.x / 25.2.x tag) inside
-#         NexusSfan's debian/. All its binary packages are published.
+#         BETA_REF in versions.sh: the newest 25.1.x / 25.2.x tag) inside the
+#         vendored debian/ (xlibre/packaging/xlibre-server[-stable]). All its binary packages are published.
 # xis:    xlibre-xis-core, the XiS fork (25.2 based) as a drop-in for the beta
 #         xserver-xlibre-core: the same packaging with the XiS tree and the core
 #         package renamed. It Provides/Conflicts/Replaces xserver-xlibre-core, so
@@ -23,12 +23,12 @@ mkdir -p "$WORK/src"
 case "$mode" in
 stable|beta)
     [ "$CHANNEL" = "$mode" ] || die "$mode server only in the $mode channel"
-    if [ "$mode" = stable ]; then uref="$STABLE_REF"; pref="$STABLE_PACKAGING_REF"; else uref="$BETA_REF"; pref="$BETA_PACKAGING_REF"; fi
+    if [ "$mode" = stable ]; then uref="$STABLE_REF"; pkg=xlibre-server-stable; else uref="$BETA_REF"; pkg=xlibre-server; fi
     dest="$OUT/$mode/xlibre-server"
-    git_fetch "$src" "$PACKAGING_BASE/xlibre-server.git" "$pref" >/dev/null
+    use_packaging "$pkg" "$src"
     tag="$(git_fetch "$tree" "$SERVER_URL" "$uref")"
-    step "xlibre-server ($mode) = debian/ @ $pref + $tag"
-    echo "xlibre-server($mode) packaging=$(git -C "$src" rev-parse HEAD) code=xserver@$tag($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+    step "xlibre-server ($mode) = vendored $pkg + $tag"
+    echo "xlibre-server($mode) packaging=vendored:$pkg code=xserver@$tag($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
     apply_patches "$src" "$mode"
     swap_version "$src" "${tag##*-}" "XLibre $tag"
@@ -37,11 +37,11 @@ stable|beta)
 xis)
     [ "$CHANNEL" = beta ] || die "XiS only in the beta channel"
     dest="$OUT/beta/xlibre-xis-core"
-    git_fetch "$src" "$PACKAGING_BASE/xlibre-server.git" "$BETA_PACKAGING_REF" >/dev/null
+    use_packaging xlibre-server "$src"
     xref="$(git_fetch "$tree" "$XIS_URL" "$XIS_REF")"
     sha="$(git -C "$tree" rev-parse --short=7 HEAD)"
-    step "xlibre-xis-core = debian/ @ $BETA_PACKAGING_REF + XiS $xref ($XIS_URL)"
-    echo "xlibre-xis-core packaging=$(git -C "$src" rev-parse HEAD) code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+    step "xlibre-xis-core = vendored xlibre-server + XiS $xref ($XIS_URL)"
+    echo "xlibre-xis-core packaging=vendored:xlibre-server code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
 
     # Rename the core package (not the udeb) in file names and contents.

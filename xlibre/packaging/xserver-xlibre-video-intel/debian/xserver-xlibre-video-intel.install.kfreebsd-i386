@@ -1,0 +1,3 @@
+usr/lib/xorg/modules/drivers/*.so
+usr/lib/*/libIntelXvMC.so*
+usr/share/man

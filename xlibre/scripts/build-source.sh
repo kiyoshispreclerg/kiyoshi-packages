@@ -1,7 +1,7 @@
 #!/bin/bash
 # build-source.sh NAME UPSTREAM-REPO UPSTREAM-REF
-# Build one source package: the debian/ directory of github.com/xlibre-debian/NAME
-# around the official tree (github.com/X11Libre/UPSTREAM-REPO at UPSTREAM-REF),
+# Build one source package: the vendored debian/ directory of NAME
+# (xlibre/packaging/NAME) around the official tree (github.com/X11Libre/UPSTREAM-REPO at UPSTREAM-REF),
 # versioned with the target, with its build-dependencies installed from the
 # distro and from what was built before. Output: $OUT/<component>/NAME/*.deb.
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -10,10 +10,10 @@ src="$WORK/src/$name"
 comp="$(component_of "$name")"
 dest="$OUT/$comp/$name"
 
-step "$name  (debian/ from $PACKAGING_BASE/$name @ $PACKAGING_REF; code from $repo @ $uref)"
+step "$name  (vendored debian/; code from $repo @ $uref)"
 mkdir -p "$WORK/src"; rm -rf "$dest"; mkdir -p "$dest"
-git_fetch "$src" "$PACKAGING_BASE/$name.git" "$PACKAGING_REF" >/dev/null
-info="$name packaging=$(git -C "$src" rev-parse HEAD)"
+use_packaging "$name" "$src"
+info="$name packaging=vendored"
 
 if [ "$repo" != - ]; then
     tree="$WORK/src/tree-$name"

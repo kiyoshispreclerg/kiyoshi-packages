@@ -1,0 +1,3 @@
+The Xspice.1 manpage is generated using the following command:
+
+help2man --version-string="XSPICE" -S Xspice -N -n "X server and SPICE server" ./scripts/Xspice > debian/Xspice.1

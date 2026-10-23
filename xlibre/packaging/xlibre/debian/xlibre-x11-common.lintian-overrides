@@ -1,0 +1,4 @@
+# it's a symlink
+xlibre-x11-common: no-manual-page usr/bin/X11
+# yes, we know
+xlibre-x11-common: symlink-is-self-recursive usr/bin/X11 .

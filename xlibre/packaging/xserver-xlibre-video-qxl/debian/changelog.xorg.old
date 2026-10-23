@@ -1,0 +1,247 @@
+xserver-xorg-video-qxl (0.1.6-2) UNRELEASED; urgency=medium
+
+  [ Debian Janitor ]
+  * Trim trailing whitespace.
+  * Drop transition for old debug package migration.
+  * Update standards version to 4.6.1, no changes needed.
+
+  [ Emilio Pozuelo Monfort ]
+  * debian/rules: remove unnecessary ownership change. Thanks
+    Niels Thykier. (Closes: #1089484)
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Fri, 21 Feb 2025 17:21:12 +0100
+
+xserver-xorg-video-qxl (0.1.6-1) unstable; urgency=medium
+
+  * New upstream release.
+  * patches: Drop obsolete patches. (Closes: #1038648)
+  * watch: Updated.
+  * Update signing-key.asc.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 21 Jun 2023 08:58:45 +0300
+
+xserver-xorg-video-qxl (0.1.5+git20200331-3) unstable; urgency=medium
+
+  * configure-Simplify-fragile-libdrm-detection.patch: Fix detecting
+    qxl_drm.h. (LP: #1967901)
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 06 Apr 2022 10:23:41 +0300
+
+xserver-xorg-video-qxl (0.1.5+git20200331-2) unstable; urgency=medium
+
+  * Fix build against xserver 21.1. (Closes: #1002143)
+  * control: Bump debhelper-compat to 13, policy to 4.6.0.
+  * watch: Update upstream git url.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Wed, 09 Feb 2022 13:57:17 +0200
+
+xserver-xorg-video-qxl (0.1.5+git20200331-1) unstable; urgency=medium
+
+  [ Laurent Bigonville ]
+  * debian/watch: Track .bz2 files instead of the .gz ones
+  * debian/control: Update Vcs-* fields
+
+  [ Helmut Grohne ]
+  * Annotate python build dependency with :any. (Closes: #892954)
+
+  [ Timo Aaltonen ]
+  * New upstream release.
+  * control: Migrate to x11proto-dev.
+  * control: Migrate to debhelper-compat, bump to 12.
+  * Build with python3. (Closes: #938856)
+  * python3.diff: Fix shebangs etc for python3.
+  * Drop generated upstrean changelog, it wasn't shipped anyway.
+  * docs: Updated.
+  * control: Bump policy to 4.5.0.
+
+ -- Timo Aaltonen <tjaalton@debian.org>  Tue, 31 Mar 2020 12:03:15 +0300
+
+xserver-xorg-video-qxl (0.1.5-2) unstable; urgency=medium
+
+  * Team upload.
+  * Update the debian/copyright file and use dep5
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 24 Dec 2016 01:27:13 +0100
+
+xserver-xorg-video-qxl (0.1.5-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+    - Drop debian/patches/no-surfaces-kms.patch and
+      debian/patches/qxl-kms-disable-composite.patch, applied upstream
+  * Re-reenable Xspice, last release now works with XOrg 1.19
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 20 Dec 2016 17:32:52 +0100
+
+xserver-xorg-video-qxl (0.1.4+20161126git4d7160c-1) unstable; urgency=medium
+
+  * Team upload.
+  [ Laurent Bigonville ]
+  * New git snapshot (4d7160c) (Closes: #845741)
+    - Drop debian/patches/pciaccess_io.diff, applied upstream
+  * Rely on automatically built dbgsym packages instead of creating a dbg one
+  * debian/control: Fix wording in xserver-xspice description (Closes:
+    #799379)
+  * debian/control: Bump Standards-Version to 3.9.8, no further changes
+  * debian/control: Add dh-python to the build-dependencies
+  * debian/control: Explicitly build-depend against libxfont-dev
+  * Drop debian/patches/xextproto.diff and build-depend against libxext-dev
+    instead
+  * Disable Xspice again, it's not working with XOrg 1.19 release
+  * debian/patches/qxl-kms-disable-composite.patch,
+    debian/patches/no-surfaces-kms.patch: Fix performance issues/crashes and
+    fix graphical glitches by disabling COMPOSITE extension. (Closes: #801081)
+
+  [ Andreas Boll ]
+  * Update a bunch of URLs in packaging to https.
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 26 Nov 2016 17:38:32 +0100
+
+xserver-xorg-video-qxl (0.1.4-3) unstable; urgency=medium
+
+  * Team upload.
+  * debian/control:
+    - xserver-xspice: Drop dependency against xserver-xorg-video-qxl, this
+      is not needed anymore now that spiceqxl_drv.so is not shipped in that
+      package.
+    - xserver-xspice: Add ${xviddriver:Depends} to the dependencies to ensure
+      that we have the proper ABI.
+  * debian/rules: Generate the "xviddriver:Depends" substvars for the
+    xserver-xspice package.
+  * debian/control: Add libudev-dev to the build-dependency for the linux
+    architectures
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 30 May 2015 16:02:55 +0200
+
+xserver-xorg-video-qxl (0.1.4-2) unstable; urgency=medium
+
+  * Team upload.
+  * Renable Xspice
+  * Bump debhelper compatibility to 9
+  * debian/control: Bump Standards-Version to 3.9.6
+  * debian/control: Use canonical Vcs URL to please lintian
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 30 May 2015 13:12:17 +0200
+
+xserver-xorg-video-qxl (0.1.4-1) unstable; urgency=medium
+
+  * Let uscan verify tarball signatures.
+  * New upstream release.
+  * Add patch from rhbz#1201877 to use libpciaccess instead of raw port I/O,
+    fixing FTBFS on arm64.  Thanks, Adam Jackson!
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 08 May 2015 20:07:59 +0200
+
+xserver-xorg-video-qxl (0.1.1-2) unstable; urgency=medium
+
+  * Remove Liang Guo and Cyril Brulebois from Uploaders.
+  * Back to source format 1.0.
+  * Stop building/shipping Xspice (closes: #738744, #729054, #729053)
+  * Use verbose build rules.
+  * Add patch to fix misdetection of xextproto.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 19 Jun 2014 22:03:36 +0200
+
+xserver-xorg-video-qxl (0.1.1-1) unstable; urgency=low
+
+  [Michele Cane]
+  * New upstream release.
+
+  [Liang Guo]
+  * Ignore tests in debian/source/options
+
+ -- Liang Guo <guoliang@debian.org>  Thu, 24 Oct 2013 09:49:08 +0800
+
+xserver-xorg-video-qxl (0.1.0-2) unstable; urgency=low
+
+  * Upload to unstable
+  * Bump Standards-Version to 3.9.4 (no changes)
+  * Enalbe Xspice in i386 (Closes: 689394)
+
+ -- Liang Guo <guoliang@debian.org>  Fri, 17 May 2013 07:19:32 +0800
+
+xserver-xorg-video-qxl (0.1.0-1) experimental; urgency=low
+
+  [ Maarten Lankhorst ]
+  * New upstream release.
+
+  [ Timo Aaltonen ]
+  * control: Bump build-dep on libspice-protocol-dev to >= 0.12.2~.
+
+  [ Liang Guo ]
+  * Ignore automatically generated files when build packages.
+
+ -- Liang Guo <guoliang@debian.org>  Tue, 22 Jan 2013 23:36:17 +0800
+
+xserver-xorg-video-qxl (0.0.17-2) unstable; urgency=low
+
+  * Enable Xspice (Closes: 668537)
+  * Add debian/xserver-xorg-video-qxl.docs.
+
+ -- Liang Guo <bluestonechina@gmail.com>  Mon, 16 Apr 2012 22:04:27 +0800
+
+xserver-xorg-video-qxl (0.0.17-1) unstable; urgency=low
+
+  [ Liang Guo ]
+  * New upstream release.
+  * debian/copyright:
+    - Remove src/lookup3.c, removed upstream.
+    - Add src/murmurhash3.{c,h}, new file.
+  * debian/source/options:
+    - Ignore ChangeLog, included in upstream tarbar, but not in git.
+  * Remove translate-the-access-region.patch, applied upstream.
+  * Bump Standards-Version to 3.9.3, no changes needed.
+  [ Cyril Brulebois ]
+  * Fix typo in the debug package's description.
+
+ -- Liang Guo <bluestonechina@gmail.com>  Fri, 16 Mar 2012 16:13:52 +0800
+
+xserver-xorg-video-qxl (0.0.16-2) unstable; urgency=low
+
+  [Serge Hallyn]
+  * Add translate-the-access-region.patch(Closes: #655318)
+  * Add debug package
+
+ -- Liang Guo <bluestonechina@gmail.com>  Wed, 01 Feb 2012 18:01:19 +0800
+
+xserver-xorg-video-qxl (0.0.16-1) unstable; urgency=low
+
+  [ Liang Guo ]
+  * New upstream release
+  * Temporarily ignore TODO.xspice
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 12 Nov 2011 00:16:28 +0100
+
+xserver-xorg-video-qxl (0.0.14-1) unstable; urgency=low
+
+  * New upstream release:
+    - Fix VT switching issues.
+  * Add libspice-protocol-dev build-dep:
+    - Versioned because of FDO#39249.
+  * Bump Standards-Version to 3.9.2 (no changes).
+  * Fix typo and missing space in long description.
+  * Add myself to Uploaders.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 23 Jul 2011 12:15:54 +0200
+
+xserver-xorg-video-qxl (0.0.13-1) unstable; urgency=low
+
+  [ Liang Guo ]
+  * New upstream version.
+  * Remove xsfbs accordingly.
+  * Switch to dh:
+    - Use debhelper 8.
+    - Use dh-autoreconf.
+  * Remove fix_qxl_driver_assert.patch, already in upstream.
+  * Bump Standards-Version to 3.9.1, no changes needed.
+  * Add quilt build-dep.
+  * Add HomePage control field.
+  * Ignore autogen.sh changes when build source package.
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 15 Feb 2011 18:27:12 +0100
+
+xserver-xorg-video-qxl (0.0.12-1) unstable; urgency=low
+
+  * Initial release (Closes: #576642)
+
+ -- Liang Guo <bluestonechina@gmail.com>  Thu, 20 May 2010 16:44:11 +0800

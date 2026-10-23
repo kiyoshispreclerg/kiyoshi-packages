@@ -1,0 +1,44 @@
+xserver-xlibre-video-ati (1:25.0.1-1) unstable; urgency=medium
+
+  * New upstream version 25.0.1
+
+ -- NexusSfan <nexussfan@duck.com>  Mon, 16 Feb 2026 06:49:17 -0800
+
+xserver-xlibre-video-ati (1:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:43:22 -0800
+
+xserver-xlibre-video-ati (1:22.0.0.4-1) unstable; urgency=medium
+
+  * New upstream version 22.0.0.4
+
+ -- NexusSfan <nexussfan@duck.com>  Thu, 04 Dec 2025 17:22:04 -0800
+
+xserver-xlibre-video-ati (1:22.0.0.3-1) unstable; urgency=medium
+
+  * New upstream version 22.0.0.3
+
+ -- apebl <a@pebl.cc>  Sun, 28 Sep 2025 14:18:39 +0000
+
+xserver-xlibre-video-ati (1:22.0.0.2-1) unstable; urgency=medium
+
+  * debian/watch: Update upstream prefix to xlibre
+  * New upstream version 22.0.0.2
+  * rules: Specify xorg module directory
+
+ -- apebl <a@pebl.cc>  Sat, 23 Aug 2025 01:07:50 +0000
+
+xserver-xlibre-video-ati (1:22.0.0.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * debian/gbp.conf: Use DEP-14 style branches
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:12:58 +0000
+
+xserver-xlibre-video-ati (1:22.0.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

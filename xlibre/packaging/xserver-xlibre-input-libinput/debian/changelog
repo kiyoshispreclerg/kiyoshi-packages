@@ -1,0 +1,38 @@
+xserver-xlibre-input-libinput (1:25.0.1-1) unstable; urgency=medium
+
+  * New upstream version 25.0.1
+
+ -- NexusSfan <nexussfan@duck.com>  Mon, 02 Feb 2026 16:51:56 -0800
+
+xserver-xlibre-input-libinput (1:25.0.0-1) unstable; urgency=medium
+
+  * New upstream version 25.0.0
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:36:22 -0800
+
+xserver-xlibre-input-libinput (1.5.1.0-1) unstable; urgency=medium
+
+  * New upstream version 1.5.1.0
+  * patches: Drop drop-xasprintf-xvasprintf, fixed upstream
+  * rules: Specify xorg module directory
+
+ -- apebl <a@pebl.cc>  Sat, 23 Aug 2025 00:22:45 +0000
+
+xserver-xlibre-input-libinput (1.5.0.1-3) unstable; urgency=medium
+
+  * debian/patches: Add drop-xasprintf-xvasprintf.diff
+
+ -- apebl <a@pebl.cc>  Tue, 19 Aug 2025 11:58:59 +0000
+
+xserver-xlibre-input-libinput (1.5.0.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * debian/gbp.conf: Use DEP-14 style branches
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:12:51 +0000
+
+xserver-xlibre-input-libinput (1.5.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

@@ -1,0 +1,41 @@
+Source: xserver-xlibre-video-voodoo
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 8),
+ dh-autoreconf,
+ quilt,
+ pkg-config,
+ xutils-dev,
+ xserver-xlibre-dev (>= 2:1.14),
+ x11proto-xext-dev,
+ x11proto-xf86dga-dev,
+ x11proto-core-dev,
+ x11proto-fonts-dev,
+ x11proto-randr-dev,
+ x11proto-render-dev,
+ libpciaccess-dev (>= 0.8),
+Standards-Version: 3.9.4
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-voodoo.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-voodoo
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-voodoo
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-voodoo (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- Voodoo display driver
+ This package provides the driver for 3dfx Voodoo1 and Voodoo2 chipsets.
+ .
+ More information about XLibre can be found at:
+ <URL:https://github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-voodoo driver module.
+Conflicts:
+ xserver-xorg-video-voodoo,

@@ -1,0 +1,74 @@
+Source: xserver-xlibre-input-evdev
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ pkgconf,
+ quilt,
+ xserver-xlibre-dev (>= 2:1.15.99),
+ x11proto-dev,
+ libxkbfile-dev,
+ xutils-dev (>= 1:7.5+4),
+ libudev-dev,
+ libmtdev-dev,
+ libevdev-dev (>= 1.2.2+dfsg-1~),
+Standards-Version: 4.6.1
+Homepage: https://github.com/X11Libre
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-evdev.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-evdev
+
+Package: xserver-xlibre-input-evdev
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ xserver-xorg-input-evdev (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Breaks: xserver-xorg-core (<< 2:1.18.0-1)
+Replaces: xserver-xorg-core (<< 2:1.18.0-1)
+Description: XLibre X server -- evdev input driver
+ This package provides the driver for input devices using evdev, the Linux
+ kernel's event delivery mechanism.  This driver allows for multiple keyboards
+ and mice to be treated as separate input devices.
+ .
+ This package is built from the XLibre xf86-input-evdev driver module.
+Conflicts:
+ xserver-xorg-input-evdev,
+
+Package: xserver-xlibre-input-evdev-udeb
+Package-Type: udeb
+Section: debian-installer
+Architecture: linux-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+ udev-udeb,
+Provides:
+ xserver-xorg-input-evdev-udeb (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- evdev input driver
+ This is a udeb, or a microdeb, for the debian-installer.
+Conflicts:
+ xserver-xorg-input-evdev-udeb,
+
+Package: xserver-xlibre-input-evdev-dev
+Section: libdevel
+Architecture: all
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends}
+Multi-Arch: foreign
+Description: XLibre X server -- evdev input driver (development headers)
+ This package provides the development headers for the evdev input driver
+ found in xserver-xlibre-input-evdev. Non-developers likely have little use
+ for this package.
+ .
+ This package is built from the XLibre xf86-input-evdev driver module.
+Provides:
+ xserver-xorg-input-evdev-dev (= ${binary:Version}),
+Conflicts:
+ xserver-xorg-input-evdev-dev,

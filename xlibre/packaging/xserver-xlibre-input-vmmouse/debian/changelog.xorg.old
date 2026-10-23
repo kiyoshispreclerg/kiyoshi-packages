@@ -1,0 +1,330 @@
+xserver-xorg-input-vmmouse (1:13.1.0-2) UNRELEASED; urgency=medium
+
+  [ Julien Cristau ]
+  * Bump Standards-Version to 3.9.6.
+
+  [ Timo Aaltonen ]
+  * control: Drop the dependency on x-x-i-mouse, the fallback is not
+    used if the driver is built against a modern xserver.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 28 Oct 2015 16:24:01 +0000
+
+xserver-xorg-input-vmmouse (1:13.1.0-1) unstable; urgency=medium
+
+  * Team upload
+
+  [ Andreas Boll ]
+  * Enable on x32 (Closes: #775203).
+  * Fix Vcs-* fields.
+
+  [ Julien Cristau ]
+  * New upstream release.
+
+ -- Julien Cristau <jcristau@debian.org>  Wed, 28 Oct 2015 16:20:04 +0000
+
+xserver-xorg-input-vmmouse (1:13.0.99-1) unstable; urgency=medium
+
+  * Let uscan verify tarball signatures.
+  * New upstream release.
+    + drop 01-enable-detect-in-kvm.diff, no longer necessary
+  * Bump debhelper compat level to 9.
+  * Remove Drew and Cyril from Uploaders.
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 02 May 2015 22:44:15 +0200
+
+xserver-xorg-input-vmmouse (1:13.0.0-1) unstable; urgency=low
+
+  [ Michele Cane ]
+  * New upstream release.
+  * Bump Standards-Version to 3.9.4, no changes needed.
+
+  [ Julien Cristau ]
+  * Disable silent build rules.
+  * Add build-dep on udev to allow rules dir detection.
+
+ -- Julien Cristau <jcristau@debian.org>  Sun, 08 Sep 2013 18:32:45 +0200
+
+xserver-xorg-input-vmmouse (1:12.9.0-1) unstable; urgency=low
+
+  [ Robert Hooker ]
+  * New upstream bugfix release.
+    - Fixes erratic mouse behavior with a Windows x64 host. (LP: #996821)
+    - Fixes initialization when no other drivers request hardware access.
+
+ -- Cyril Brulebois <kibi@debian.org>  Fri, 15 Jun 2012 02:21:58 +0200
+
+xserver-xorg-input-vmmouse (1:12.8.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Cyril Brulebois <kibi@debian.org>  Tue, 20 Mar 2012 21:01:22 +0000
+
+xserver-xorg-input-vmmouse (1:12.7.0-2) unstable; urgency=low
+
+  * Pass --bindir=/bin to configure, lost in the dh-ification. Thanks to
+    Jordi Pujol for the bug (Closes: #625291).
+  * Adapt .install file accordingly.
+
+ -- Cyril Brulebois <kibi@debian.org>  Tue, 03 May 2011 12:48:40 +0200
+
+xserver-xorg-input-vmmouse (1:12.7.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sun, 10 Apr 2011 23:20:59 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.99.901-2) unstable; urgency=low
+
+  * Switch to dh:
+    - Use debhelper 8.
+    - Use dh-autoreconf.
+    - Bump xserver-xorg-dev build-dep for dh_xsf_substvars and xsf
+      debhelper sequence.
+    - Tweak vmmouse_detect's entry in .install, making explicit it is
+      installed under /usr/bin upstream, and shipped under /bin.
+  * Remove xserver-xorg-input-vmmouse.postinst.in's .in suffix. There's
+    no need to do any substitution.
+  * Remove xsfbs accordingly.
+  * Remove long obsolete Replaces.
+  * Update Uploaders list. Thanks, David & Brice!
+  * Wrap Depends/Provides.
+  * Bump Standards-Version to 3.9.1 (no changes needed).
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 05 Feb 2011 14:41:08 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.99.901-1) experimental; urgency=low
+
+  * New upstream release candidate.
+  * Bump xutils-dev build-dep for new macros.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 05 Jan 2011 01:57:21 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.10-1) experimental; urgency=low
+
+  [ Robert Hooker ]
+  * New upstream release.
+
+  [ Cyril Brulebois ]
+  * Update debian/copyright from upstream COPYING.
+  * Get rid of HAL-specific files since we're only buiding on Linux
+    architectures; those files weren't installed anyway.
+  * Switch from --list-missing to --fail-missing for additional safety.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 20 Nov 2010 00:09:43 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.9-4) experimental; urgency=low
+
+  * Merge xsfbs to get unversioned Provides.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 16 Oct 2010 15:00:44 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.9-3) experimental; urgency=low
+
+  * Build against Xserver 1.9.1 rc1.
+
+ -- Cyril Brulebois <kibi@debian.org>  Wed, 13 Oct 2010 01:22:34 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.9-2) unstable; urgency=low
+
+  [ Robert Hooker ]
+  * Pull from upstream master branch up to commit 833698b3b98
+    - Fixed an issue where vmmouse was matched against the non-event device
+      as well causing it to load multiple times and get stuck.
+  * Version build-dependency on xutils-dev as it requires util-macros 1.4.
+
+  [ Julien Cristau ]
+  * Move vmmouse_detect from /usr/bin to /bin, since the udev rule needs it.
+  * Stop shipping hal-probe-vmmouse.
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 04 Jun 2010 10:25:57 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.9-1) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * New upstream release
+    - Adds InputClass support
+  * Drop our local udev rules and xorg.conf.d snippet, they're upstream now.
+  * Bump build-dependency on xserver-xorg-dev for /usr/share/X11/xorg.conf.d.
+  * Use new xsfbs and ${xinpdriver:Depends}.
+
+  [ Cyril Brulebois ]
+  * Add myself to Uploaders.
+  * Bump Standards-Version from 3.8.3 to 3.8.4 (no changes needed).
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 17 Apr 2010 21:50:29 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.5-4) unstable; urgency=low
+
+  * Add 10-vmmouse.conf.
+  * Add 69-xorg-vmmouse.rules, needed to set ID_INPUT.tags.
+  * Add 01-enable-detect-in-kvm.diff, closes #525039.
+  * Don't install the hal fdi anymore, it's obsolete.
+  * Run udevadm trigger on postinst, and depend on udev.
+
+ -- Timo Aaltonen <tjaalton@ubuntu.com>  Tue, 30 Mar 2010 21:56:42 +0300
+
+xserver-xorg-input-vmmouse (1:12.6.5-3) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * Rename the build directory to not include DEB_BUILD_GNU_TYPE for no
+    good reason.  Thanks, Colin Watson!
+  * Remove myself from Uploaders
+
+  [ Brice Goglin ]
+  * Pull from upstream master branch up to commit aca67eca.
+    + Stop using xf86LoaderReqSymLists since it was removed from the
+      server, closes: #568403.
+
+ -- Brice Goglin <bgoglin@debian.org>  Thu, 04 Feb 2010 19:39:57 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.5-2) experimental; urgency=low
+
+  [ Timo Aaltonen ]
+  * Build against Xserver 1.7.
+
+  [ Cyril Brulebois ]
+  * Upload to experimental.
+
+ -- Cyril Brulebois <kibi@debian.org>  Sat, 05 Dec 2009 23:20:15 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump Standards-Version to 3.8.3 now that we have README.source.
+
+ -- Brice Goglin <bgoglin@debian.org>  Fri, 04 Sep 2009 14:29:46 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.4-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Brice Goglin <bgoglin@debian.org>  Mon, 11 May 2009 20:13:16 +0200
+
+xserver-xorg-input-vmmouse (1:12.6.3-2) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Julien Cristau <jcristau@debian.org>  Thu, 09 Apr 2009 16:35:55 +0100
+
+xserver-xorg-input-vmmouse (1:12.6.3-1) experimental; urgency=low
+
+  * New upstream release.
+  * Drop patch vmmouse_scale_input_data.diff, it's been fixed upstream a while
+    back.
+  * Run autoreconf at build time.  Build-depend on automake, libtool and
+    xutils-dev.
+  * Handle parallel builds.
+  * Install a detection program, a hal fdi file and a callout script for X
+    input hotplug.  This closes: #509053, since the vmmouse no longer needs to
+    be configured in xorg.conf.
+  * Don't override the manpage suffix, it should be vmmouse(4) not
+    vmmouse(4x).
+  * Build against xserver 1.6 rc1.
+  * Add myself to Uploaders.
+  * Add Depends on xserver-xorg-input-mouse (closes: #509458)
+
+ -- Julien Cristau <jcristau@debian.org>  Fri, 30 Jan 2009 22:30:11 +0100
+
+xserver-xorg-input-vmmouse (1:12.5.1-4) unstable; urgency=low
+
+  * I need a brown paper bag; autoreconf so the patch added in -3 is actually
+    used…
+
+ -- Julien Cristau <jcristau@debian.org>  Tue, 21 Oct 2008 10:48:19 +0200
+
+xserver-xorg-input-vmmouse (1:12.5.1-3) unstable; urgency=low
+
+  * Cherry-pick from upstream: Properly set axis range and resolution for
+    Server 1.5+ (closes: #490912).
+
+ -- Julien Cristau <jcristau@debian.org>  Sat, 18 Oct 2008 10:55:07 +0200
+
+xserver-xorg-input-vmmouse (1:12.5.1-2) unstable; urgency=low
+
+  * Rebuild against xserver-xorg-dev 1.4.2 so that conversion_proc
+    isn't called by both the driver and the server.
+
+ -- Brice Goglin <bgoglin@debian.org>  Tue, 01 Jul 2008 20:05:02 +0200
+
+xserver-xorg-input-vmmouse (1:12.5.1-1) unstable; urgency=low
+
+  * New upstream release.
+    + Disable vmmouse_scale_input_data.diff since the corresponding
+      upstream fix has been applied.
+  * Bump Standards-Version to 3.7.3 (no changes).
+  * Run dpkg-shlibdeps with --warnings=6.  Drivers reference symbols from
+    /usr/bin/Xorg and other modules, and that's not a bug, so we want
+    dpkg-shlibdeps to shut up about symbols it can't find.
+    + Build-depend on dpkg-dev >= 1.14.17.
+
+ -- Brice Goglin <bgoglin@debian.org>  Wed, 28 May 2008 22:41:25 +0200
+
+xserver-xorg-input-vmmouse (1:12.4.3-2) unstable; urgency=low
+
+  [ Julien Cristau ]
+  * Scale input events, as X 1.4 doesn't do that itself anymore.
+    Patch by Joerg Platte <jplatte@naasa.net> (closes: #442853).
+
+  [ Brice Goglin ]
+  * Drop XS- prefixes from XS-Vcs* fields.
+
+ -- Brice Goglin <bgoglin@debian.org>  Thu, 17 Jan 2008 22:32:08 +0100
+
+xserver-xorg-input-vmmouse (1:12.4.3-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Drew Parsons <dparsons@debian.org>  Mon, 29 Oct 2007 01:24:59 +1100
+
+xserver-xorg-input-vmmouse (1:12.4.2-3) unstable; urgency=low
+
+  * Upload to unstable
+
+ -- David Nusinow <dnusinow@debian.org>  Sun, 16 Sep 2007 15:13:40 -0400
+
+xserver-xorg-input-vmmouse (1:12.4.2-2) UNRELEASED; urgency=low
+
+  * Fix upstream URL in debian/copyright.
+
+ -- Brice Goglin <bgoglin@debian.org>  Sat, 15 Sep 2007 01:49:07 +0200
+
+xserver-xorg-input-vmmouse (1:12.4.2-1) experimental; urgency=low
+
+  [ Julien Cristau ]
+  * Add link to xserver-xorg-core bug script, so that bugreports contain
+    the user's config and log files.
+  * Generate the dependency on xserver-xorg-core automatically.
+
+  [ Brice Goglin ]
+  * New upstream release.
+  * Drop 10_man_vmmouse_not_mouse, since upstream fixed the manpage.
+  * Install the upstream changelog.
+  * Bump Build-Depends: xserver-xorg-dev to >= 2:1.2.99.902
+    (needed to let xsfbs get access to serverminver).
+  * Add XS-Vcs-*.
+  * Add a link to www.X.org and a reference to the xf86-input-vmmouse
+    module in the long description.
+  * Add upstream URL to debian/copyright.
+  * Build against xserver 1.4.
+  * Generate the Provides field automatically.
+  * Add myself to uploaders, and remove Branden with his permission.
+
+  [ Timo Aaltonen ]
+  * Bump the epoch so that this can be synced to Ubuntu in the future.
+
+ -- Brice Goglin <bgoglin@debian.org>  Tue, 11 Sep 2007 23:58:50 +0200
+
+xserver-xorg-input-vmmouse (12.4.0-2) unstable; urgency=low
+
+  * Restrict to Architecture: i386 amd64, since vmmouse_proto.h
+    explicitly says only x86 (i386 or x86_64) is supported.
+
+ -- Drew Parsons <dparsons@debian.org>  Tue, 24 Oct 2006 18:37:21 +1000
+
+xserver-xorg-input-vmmouse (12.4.0-1) unstable; urgency=low
+
+  * Initial release, new in X11R7.
+  * Create patch 10_man_vmmouse_not_mouse to let the man page identify
+    this is vmmouse, not mouse.
+
+ -- Drew Parsons <dparsons@debian.org>  Sun, 15 Oct 2006 02:28:56 +1000

@@ -1,0 +1,2 @@
+version=4
+https://github.com/X11Libre/xserver/tags .*/xlibre-xserver-(.*)@ARCHIVE_EXT@

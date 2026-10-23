@@ -1,0 +1,247 @@
+Source: xlibre
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Rules-Requires-Root: no
+Standards-Version: 4.6.1
+Build-Depends:
+ debhelper-compat (= 13),
+ po-debconf,
+ asciidoc,
+Vcs-Git: https://github.com/xlibre-debian/xlibre.git
+Vcs-Browser: https://github.com/xlibre-debian/xlibre
+Homepage: https://github.com/X11Libre
+
+Package: xlibre-x11-common
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, lsb-base
+Description: X Window System (X.Org) infrastructure
+ x11-common contains the filesystem infrastructure required for further
+ installation of the X Window System in any configuration; it does not
+ provide a full installation of clients, servers, libraries, and utilities
+ required to run the X Window System.
+ .
+ A number of terms are used to refer to the X Window System, including "X",
+ "X Version 11", "X11", "X11R6", and "X11R7".  The version of X used in
+ Debian is derived from the version released by the X.Org Foundation, and
+ is thus often also referred to as "X.Org".  All of the preceding quoted
+ terms are functionally interchangeable in an Debian system.
+Provides:
+ x11-common (= ${binary:Version}),
+Conflicts:
+ x11-common,
+
+Package: xserver-xlibre
+Architecture: any
+Depends:
+ xserver-xlibre-core,
+ xserver-xlibre-legacy [!linux-any],
+ xserver-xlibre-video-all | xlibre-driver-video,
+ xserver-xlibre-input-all | xlibre-driver-input,
+ ${shlibs:Depends},
+ ${misc:Depends},
+ xkb-data,
+ x11-xkb-utils
+Recommends:
+ libgl1-mesa-dri,
+ xserver-xlibre-legacy [linux-any],
+Provides:
+ xserver-xorg (= ${binary:Version}),
+ xserver
+Description: XLibre X server
+ This package depends on the full suite of the server and drivers for the
+ XLibre X server.  It does not provide the actual server itself.
+Conflicts:
+ xserver-xorg,
+
+Package: xserver-xlibre-video-all
+Architecture: any
+Depends:
+ xserver-xlibre-video-amdgpu [!hurd-any !kfreebsd-any !s390x],
+ xserver-xlibre-video-ati [!hurd-any !s390x],
+ xserver-xlibre-video-fbdev [!s390x],
+ xserver-xlibre-video-dummy [s390x],
+ xserver-xlibre-video-nouveau [amd64 arm64 armhf i386 powerpc x32],
+ xserver-xlibre-video-vesa [any-amd64 any-i386],
+ xserver-xlibre-video-vmware [amd64 hurd-i386 i386 x32],
+ ${misc:Depends},
+Recommends:
+ xserver-xlibre-video-intel [amd64 i386 kfreebsd-any x32],
+ xserver-xlibre-video-qxl [amd64 i386 x32],
+Replaces: xserver-xorg-driver-all
+Conflicts:
+ xserver-xorg-video-all,
+ xserver-xorg-driver-all,
+Description: XLibre X server -- output driver metapackage
+ This package depends on the full suite of output drivers for the XLibre X server
+ (XLibre).  It does not provide any drivers itself, and may be removed if you wish
+ to only have certain drivers installed.
+Provides:
+ xserver-xorg-video-all (= ${binary:Version}),
+
+Package: xserver-xlibre-input-all
+Architecture: any
+Depends:
+ xserver-xlibre-input-kbd [!linux-any],
+ xserver-xlibre-input-libinput [linux-any],
+ xserver-xlibre-input-mouse [!linux-any],
+ xserver-xlibre-input-synaptics [!linux-any],
+ ${misc:Depends},
+Recommends:
+ xserver-xlibre-input-wacom [!hurd-any !kfreebsd-any !s390x],
+Description: XLibre X server -- input driver metapackage
+ This package depends on the full suite of input drivers for the XLibre X server
+ (XLibre).  It does not provide any drivers itself, and may be removed if you wish
+ to only have certain drivers installed.
+Provides:
+ xserver-xorg-input-all (= ${binary:Version}),
+Conflicts:
+ xserver-xorg-input-all,
+
+Package: xlibre
+Architecture: any
+Depends:
+ xserver-xlibre (>= ${binary:Version}),
+ libgl1,
+ libgl1-mesa-dri,
+ libglu1-mesa,
+ xfonts-base,
+ xfonts-100dpi,
+ xfonts-75dpi,
+ xfonts-scalable,
+ x11-apps,
+ x11-session-utils,
+ x11-utils,
+ x11-xkb-utils,
+ x11-xserver-utils,
+ xauth,
+ xinit,
+ xfonts-utils,
+ xkb-data,
+ xorg-docs-core,
+ xterm | x-terminal-emulator,
+ ${misc:Depends},
+Provides:
+ xorg (= ${binary:Version}),
+ x-window-system, x-window-system-core
+Suggests:
+ xorg-docs,
+ x11-xfs-utils,
+Description: XLibre X Window System
+ This metapackage provides the components for a standalone
+ workstation running the X Window System.  It provides the X libraries, an X
+ server, a set of fonts, and a group of basic X clients and utilities.
+ .
+ Higher level metapackages, such as those for desktop environments, can
+ depend on this package and simplify their dependencies.
+ .
+ It should be noted that a package providing x-window-manager should also
+ be installed to ensure a comfortable X experience.
+Conflicts:
+ xorg,
+
+Package: xlibre-dev
+Architecture: all
+Depends:
+ libfontenc-dev,
+ libfs-dev,
+ libice-dev,
+ libsm-dev,
+ libx11-dev,
+ libxau-dev,
+ libxaw7-dev,
+ libxcomposite-dev,
+ libxcursor-dev,
+ libxdamage-dev,
+ libxdmcp-dev,
+ libxext-dev,
+ libxfixes-dev,
+ libxfont-dev,
+ libxft-dev,
+ libxi-dev,
+ libxinerama-dev,
+ libxkbfile-dev,
+ libxmu-dev,
+ libxmuu-dev,
+ libxpm-dev,
+ libxrandr-dev,
+ libxrender-dev,
+ libxres-dev,
+ libxss-dev,
+ libxt-dev,
+ libxtst-dev,
+ libxv-dev,
+ libxvmc-dev,
+ libxxf86dga-dev,
+ libxxf86vm-dev,
+ x11proto-dev,
+ xserver-xlibre-dev,
+ xtrans-dev,
+ ${misc:Depends},
+Description: XLibre X Window System development libraries
+ This metapackage provides the development libraries for the XLibre X Window
+ System.
+ .
+ X Window System design documentation, manual pages, library reference
+ works, static versions of the shared libraries, and C header files are
+ supplied by the packages depended on by this metapackage.
+ .
+ Note that this is a convenience package for users and is not a package for
+ Debian developers to have their package depend on.
+Provides:
+ xorg-dev (= ${binary:Version}),
+Conflicts:
+ xorg-dev,
+
+Package: xlibre-xbase-clients
+Architecture: all
+Depends:
+ x11-apps,
+ x11-session-utils,
+ x11-utils,
+ x11-xkb-utils,
+ x11-xserver-utils,
+ xauth,
+ xinit,
+ ${misc:Depends},
+Suggests:
+ x11-xfs-utils,
+Description: miscellaneous X clients - metapackage
+ An X client is a program that interfaces with an X server (almost always via
+ the X libraries), and thus with some input and output hardware like a
+ graphics card, monitor, keyboard, and pointing device (such as a mouse).
+ .
+ This package provides a miscellaneous assortment of several dozen X clients
+ that ship with the X Window System.
+ .
+ This package is provided for transition from earlier Debian releases, the
+ programs formerly in xutils and xbase-clients having been split out in smaller
+ packages.
+Provides:
+ xbase-clients (= ${binary:Version}),
+Conflicts:
+ xbase-clients,
+
+Package: xlibre-xutils
+Architecture: all
+Depends:
+ x11-utils,
+ x11-xserver-utils,
+ x11-session-utils,
+ xfonts-utils,
+ ${misc:Depends},
+Suggests:
+ x11-xfs-utils,
+Description: X Window System utility programs metapackage
+ xutils provides a set of utility programs shipped with the X Window System.
+ Many of these programs are useful even on a system that does not have any X
+ clients or X servers installed.
+ .
+ This package is provided for transition from earlier Debian releases, the
+ programs formerly in xutils and xbase-clients having been split out in smaller
+ packages.
+Provides:
+ xutils (= ${binary:Version}),
+Conflicts:
+ xutils,

@@ -1,0 +1,43 @@
+Source: xserver-xlibre-input-vmmouse
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 9),
+ dh-autoreconf,
+ pkg-config,
+ xserver-xlibre-dev (>= 2:1.9.4),
+ x11proto-input-dev,
+ x11proto-core-dev,
+ x11proto-randr-dev,
+ libudev-dev,
+ quilt,
+ xutils-dev (>= 1:7.5+4),
+Standards-Version: 3.9.6
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-vmmouse.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-vmmouse
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-input-vmmouse
+Architecture: i386 amd64 x32
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+ udev,
+Provides:
+ xserver-xorg-input-vmmouse (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- VMMouse input driver to use with VMWare
+ This package provides the driver for the X11 vmmouse input device.
+ .
+ The VMMouse driver enables support for the special VMMouse protocol
+ that is provided by VMware virtual machines to give absolute pointer
+ positioning.
+ .
+ More information about XLibre can be found at:
+ <URL:https://www.github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-input-vmmouse driver module.
+Conflicts:
+ xserver-xorg-input-vmmouse,

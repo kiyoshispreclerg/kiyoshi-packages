@@ -3,9 +3,11 @@
 # Code: always the official X11Libre repositories, by tag. A ref written as
 #   latest:<regex>
 # means "the newest tag whose whole name matches <regex>" (version order).
-# Packaging: only the debian/ directory of NexusSfan's repositories
-# (github.com/xlibre-debian/<source>, branch xlibre/latest), put around the
-# official tree of the tag.
+# Packaging: the debian/ directories of NexusSfan's repositories
+# (github.com/xlibre-debian/<source>), copied into xlibre/packaging/ and put
+# around the official tree of the tag. The builds read only that copy;
+# PACKAGING_BASE and the *PACKAGING_REF values below are used just by
+# scripts/vendor-packaging.sh, to refresh it.
 UPSTREAM_BASE="${UPSTREAM_BASE:-https://github.com/X11Libre}"
 PACKAGING_BASE="${PACKAGING_BASE:-https://github.com/xlibre-debian}"
 PACKAGING_REF="${PACKAGING_REF:-xlibre/latest}"
@@ -14,7 +16,6 @@ PACKAGING_REF="${PACKAGING_REF:-xlibre/latest}"
 SERVER_URL="$UPSTREAM_BASE/xserver.git"
 # beta   = XLibre 25.2.x
 BETA_REF="${BETA_REF:-latest:xlibre-xserver-25\.2\.[0-9]+}"
-BETA_PACKAGING_REF="$PACKAGING_REF"
 # stable = XLibre 25.1.x. Its packaging is the one NexusSfan had for 25.1.7: the
 # 25.2 one expects files the 25.1 tree does not have.
 STABLE_REF="${STABLE_REF:-latest:xlibre-xserver-25\.1\.[0-9]+}"

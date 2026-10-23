@@ -1,0 +1,2 @@
+version=4
+https://github.com/X11Libre/xf86-input-keyboard/tags .*/xlibre-xf86-input-keyboard-(.*)@ARCHIVE_EXT@

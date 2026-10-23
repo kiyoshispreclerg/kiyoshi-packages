@@ -1,0 +1,40 @@
+Source: xserver-xlibre-video-vmware
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 12),
+ quilt,
+ pkgconf,
+ xserver-xlibre-dev (>= 2:1.9.4),
+ x11proto-dev,
+ xutils-dev (>= 1:7.5+4),
+ libdrm-dev [!hurd-any],
+ libudev-dev [linux-any],
+ libxext-dev,
+ libx11-dev,
+ libxatracker-dev [linux-any] <xatracker>,
+Standards-Version: 4.6.2
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-vmware.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-vmware
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-vmware
+Architecture: any-amd64 any-i386
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-vmware (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- VMware display driver
+ This package provides the driver for VMware client sessions, i.e. if Linux
+ is running inside a VMware session.
+ .
+ More information about XLibre can be found at:
+ <URL:https://github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-vmware driver module.
+Conflicts:
+ xserver-xorg-video-vmware,

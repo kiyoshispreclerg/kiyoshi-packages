@@ -1,0 +1,25 @@
+xserver-xlibre-input-elographics (2:25.0.1-1) unstable; urgency=medium
+
+  * New upstream version 25.0.1
+
+ -- NexusSfan <nexussfan@duck.com>  Sat, 20 Dec 2025 16:32:21 -0800
+
+xserver-xlibre-input-elographics (1:1.4.4.2-1) unstable; urgency=medium
+
+  * New upstream version 1.4.4.2
+  * debian/rules: Specify xorg-module-dir
+
+ -- apebl <a@pebl.cc>  Sun, 28 Sep 2025 13:53:41 +0000
+
+xserver-xlibre-input-elographics (1:1.4.4.1-2) unstable; urgency=medium
+
+  * debian/control: Pin versions in Provides fields
+  * debian/gbp.conf: Use DEP-14 style branches
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 07:12:49 +0000
+
+xserver-xlibre-input-elographics (1:1.4.4.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

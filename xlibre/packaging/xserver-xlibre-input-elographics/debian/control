@@ -1,0 +1,37 @@
+Source: xserver-xlibre-input-elographics
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 8),
+ dh-autoreconf,
+ pkg-config,
+ quilt,
+ xserver-xlibre-dev (>= 2:1.10),
+ x11proto-input-dev,
+ x11proto-core-dev,
+ x11proto-randr-dev,
+ xutils-dev
+Standards-Version: 3.9.2
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-elographics.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-elographics
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-input-elographics
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ xserver-xorg-input-elographics (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- ELOGraphics input driver
+ This package provides the driver for ELO Graphics touchscreens.
+ .
+ More information about XLibre can be found at:
+ <URL:https://github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-input-elographics driver module.
+Conflicts:
+ xserver-xorg-input-elographics,

@@ -1,0 +1,35 @@
+xlibre (1:7.8+5) unstable; urgency=low
+
+  * Make the init file executable so it runs properly.
+
+ -- NexusSfan <nexussfan@duck.com>  Sun, 12 Apr 2026 07:05:03 -0700
+
+xlibre (1:7.8+4) unstable; urgency=medium
+
+  * control: Remove xorg-video-abi-25-dummy from xlibre Recommends
+
+ -- apebl <a@pebl.cc>  Sun, 28 Sep 2025 12:59:10 +0000
+
+xlibre (1:7.8+3) unstable; urgency=medium
+
+  * control: xlibre Recommends xorg-video-abi-25-dummy
+
+ -- apebl <a@pebl.cc>  Wed, 20 Aug 2025 14:28:27 +0000
+
+xlibre (1:7.8+2) unstable; urgency=medium
+
+  * Revert "debian/control: Remove unnecessary packages"
+  * Update x11-common, xbase-clients, xutils for xlibre
+  * debian: Update xlibre.lintian-overrides
+  * Update THIS_PACKAGE in xserver-xlibre.postrm
+  * d/control: Update Conflicts for xserver-xlibre-video-all
+  * debian/control: Pin versions in Provides fields
+  * xsf-docs: Comment out svg-to-png logo conversion
+
+ -- apebl <a@pebl.cc>  Mon, 18 Aug 2025 08:03:59 +0000
+
+xlibre (1:7.8+1) unstable; urgency=low
+
+  * Initial release.
+
+ -- apebl <a@pebl.cc>  Sun, 10 Aug 2025 23:41:00 +0000

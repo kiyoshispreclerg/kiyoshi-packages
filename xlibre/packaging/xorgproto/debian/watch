@@ -1,0 +1,2 @@
+version=4
+https://github.com/X11Libre/mirror.fdo.xorgproto/tags .*/xorgproto-(.*)@ARCHIVE_EXT@

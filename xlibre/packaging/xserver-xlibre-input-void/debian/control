@@ -1,0 +1,38 @@
+Source: xserver-xlibre-input-void
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper (>= 9),
+ dh-autoreconf,
+ quilt,
+ pkg-config,
+ xserver-xlibre-dev (>= 2:1.9.99.1),
+ x11proto-core-dev,
+ x11proto-randr-dev,
+ x11proto-input-dev,
+ xutils-dev (>= 1:7.5+4)
+Standards-Version: 3.9.1
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-input-void.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-input-void
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-input-void
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xinpdriver:Depends},
+Provides:
+ xserver-xorg-input-void (= ${binary:Version}),
+ ${xinpdriver:Provides}
+Description: XLibre X server -- void input driver
+ This package provides the void input driver, which never actually registers
+ any input events -- it is, as such, a 'fake' driver.
+ .
+ More information about XLibre can be found at:
+ <URL:https://www.github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-input-void driver module.
+Conflicts:
+ xserver-xorg-input-void,

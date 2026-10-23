@@ -1,0 +1,55 @@
+Source: xserver-xlibre-video-vesa
+Section: x11
+Priority: optional
+Maintainer: NexusSfan <nexussfan@duck.com>
+Build-Depends:
+ debhelper-compat (= 12),
+ pkgconf,
+ xserver-xlibre-dev (>= 2:1.11),
+ x11proto-dev,
+ xutils-dev (>= 1:7.5+4),
+ quilt,
+ libpciaccess-dev (>= 0.12.901),
+Standards-Version: 4.6.2
+Vcs-Git: https://github.com/xlibre-debian/xserver-xlibre-video-vesa.git
+Vcs-Browser: https://github.com/xlibre-debian/xserver-xlibre-video-vesa
+Homepage: https://github.com/X11Libre
+
+Package: xserver-xlibre-video-vesa
+Architecture: any-amd64 any-i386
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-vesa (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- VESA display driver
+ This driver for the XLibre X server (see xserver-xlibre for a further description)
+ uses the standard VESA interface provided on all video cards, but runs
+ unaccelerated.  This driver is not recommended for use unless you have a
+ problem with the normal driver for your card, because it will perform very
+ badly.
+ .
+ More information about XLibre can be found at:
+ <URL:https://github.com/X11Libre/xserver>
+ .
+ This package is built from the XLibre xf86-video-vesa driver module.
+Conflicts:
+ xserver-xorg-video-vesa,
+
+Package: xserver-xlibre-video-vesa-udeb
+Package-Type: udeb
+Section: debian-installer
+Architecture: hurd-any kfreebsd-any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ ${xviddriver:Depends},
+Provides:
+ xserver-xorg-video-vesa-udeb (= ${binary:Version}),
+ ${xviddriver:Provides}
+Description: XLibre X server -- vesa display driver
+ This is a udeb, or a microdeb, for the debian-installer.
+Conflicts:
+ xserver-xorg-video-vesa-udeb,

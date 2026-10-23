@@ -1,0 +1,43 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+export DEB_LDFLAGS_MAINT_APPEND =
+
+include /usr/share/dpkg/default.mk
+
+# https://bugs.debian.org/1057831
+SYSTEMD_SYSTEM_DIR = $(shell pkg-config --variable=systemdsystemunitdir systemd)
+UDEV_RULES_D_DIR = $(shell pkg-config --variable=udevdir udev)/rules.d
+XORG_MODULE_DIR = /usr/lib/xorg/modules
+
+package = xserver-xlibre-input-wacom
+XDEP = $(shell cat /usr/share/xserver-xorg/xinputdep)
+XSUB = debian/$(package).substvars
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+	    --with-systemd-unit-dir=$(SYSTEMD_SYSTEM_DIR) \
+	    --with-udev-rules-dir=$(UDEV_RULES_D_DIR) \
+	    --with-xorg-module-dir=$(XORG_MODULE_DIR) \
+	    $(NULL)
+
+execute_after_dh_auto_install:
+	# Purge .la files
+	$(RM) debian/xserver-xlibre-input-wacom/usr/lib/xorg/modules/input/*.la
+	# Rename wacom udev rules with serial number
+	mv debian/xserver-xlibre-input-wacom/$(UDEV_RULES_D_DIR)/wacom.rules debian/xserver-xlibre-input-wacom/$(UDEV_RULES_D_DIR)/69-wacom.rules
+	# Handle xinpdriver:*
+	echo "xinpdriver:Depends=$(XDEP)" > $(XSUB)
+	echo "xinpdriver:Provides=xlibre-driver-input" >> $(XSUB)

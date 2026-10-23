@@ -1,0 +1,166 @@
+DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
+
+VENDOR = $(shell dpkg-vendor --query Vendor)
+SUPPORT = https://github.com/xlibre-debian
+
+SOURCE_NAME    :=  xlibre-server
+SOURCE_VERSION := $(shell dpkg-parsechangelog -S Version)
+SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -S Timestamp)
+
+FONT_PATH := /usr/share/fonts/X11/misc
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/cyrillic
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/100dpi/:unscaled
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/75dpi/:unscaled
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/Type1
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/100dpi
+FONT_PATH := $(FONT_PATH),/usr/share/fonts/X11/75dpi
+FONT_PATH := $(FONT_PATH),built-ins
+
+confflags = \
+	--buildtype=release \
+	--prefix=/usr \
+	--libexecdir=lib/xorg \
+	\
+	-D xorg=true \
+	-D xwin=false \
+	-D xquartz=false \
+	\
+	-D module_dir=/usr/lib/xorg/modules \
+	-D serverconfigdir=/usr/lib/xorg \
+	\
+	-D xkb_dir=/usr/share/X11/xkb \
+	-D xkb_output_dir=/var/lib/xkb \
+	\
+	-D dtrace=false \
+	\
+	-D int10=x86emu \
+	-D dpms=true \
+	-D xf86bigfont=false \
+	-D xres=true \
+	-D dga=true \
+	-D linux_apm=false \
+	-D linux_acpi=false \
+	-D mitshm=true
+
+confflags_main = \
+	-D xephyr=true \
+	-D xnest=true \
+	-D xvfb=true \
+	\
+	-D default_font_path="$(FONT_PATH)" \
+	\
+	-D glx=true \
+	-D xdmcp=true \
+	-D xdm-auth-1=true \
+	-D ipv6=true \
+	\
+	-D suid_wrapper=true \
+	-D screensaver=true \
+	-D namespace=true \
+	-D xinerama=true \
+	-D xcsecurity=true \
+	-D xv=true \
+	-D xvmc=true \
+	-D sha1=libnettle \
+	$(void)
+
+# sha1=libnettle because nettlestatic is missing
+confflags_udeb = \
+	-D xephyr=false \
+	-D xnest=false \
+	-D xvfb=false \
+	\
+	-D default_font_path="built-ins" \
+	\
+	-D glx=false \
+	-D xdmcp=false \
+	-D xdm-auth-1=false \
+	-D ipv6=false \
+	\
+	-D suid_wrapper=false \
+	-D systemd_notify=false \
+	-D systemd_logind=false \
+	-D screensaver=false \
+	-D xselinux=false \
+	-D namespace=false \
+	-D xinerama=false \
+	-D xcsecurity=false \
+	-D xv=false \
+	-D xvmc=false \
+	-D sha1=libnettle \
+	\
+	-D dri1=false \
+	-D dri2=true \
+	$(void)
+
+# nvidia drivers don't even exist for hurd
+ifeq ($(DEB_HOST_ARCH_OS), linux)
+	confflags_main += \
+		-D dri3=true \
+		-D xselinux=true \
+		-D legacy_nvidia_padding=true \
+		-D legacy_nvidia_340x=true \
+		-D xfbdev=true
+else
+	confflags_main += \
+		-D dri3=false \
+		-D xselinux=false \
+		-D legacy_nvidia_padding=false \
+		-D legacy_nvidia_340x=false \
+		-D xfbdev=false
+endif
+
+ifneq (,$(filter nosystemd,$(DEB_BUILD_PROFILES)))
+	confflags_main += \
+		-D systemd_notify=false \
+		-D seatd_libseat=true \
+		-D systemd_logind=false
+else
+	confflags_main += \
+		-D systemd_notify=true \
+		-D seatd_libseat=false \
+		-D systemd_logind=true
+endif
+
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
+	confflags_main += -D dri1=false -D dri2=false
+	confflags_main += -D glamor=false
+	confflags_main += -D seatd_libseat=false
+else
+	confflags_main += -D dri1=true -D dri2=true
+	confflags_main += -D glamor=true
+endif
+
+confflags += -D hal=false
+ifeq ($(DEB_HOST_ARCH_OS), linux)
+	confflags += -D udev=true -D udev_kms=true
+else # hurd
+	confflags += -D udev=false -D udev_kms=false
+endif
+
+# some archs don't have libunwind
+ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel hppa i386 ia64 mips64 mips64el mipsel powerpc powerpcspe ppc64 ppc64el sh4))
+	confflags_main += -D libunwind=true
+else
+	confflags_main += -D libunwind=false
+endif
+confflags_udeb += -D libunwind=false
+
+# linux: libdrm needed for kms (hw/xfree86/os-support/linux/lnx_platform.c)
+#        even in udeb
+# hurd: no libdrm
+ifeq ($(DEB_HOST_ARCH_OS), linux)
+	confflags_main += -D drm=true
+	confflags_udeb += -D drm=true
+else # hurd
+	confflags_main += -D drm=false
+	confflags_udeb += -D drm=false
+endif
+
+ifneq (,$(filter nocheck, $(DEB_BUILD_OPTIONS)))
+	confflags += -D tests=false
+else
+	confflags += -D tests=true
+endif
+
+vars = $(shell DEB_BUILD_MAINT_OPTIONS="hardening=+pie" DEB_LDFLAGS_MAINT_APPEND="-Wl,-z,now,-Bsymbolic" DEB_CPPFLAGS_MAINT_APPEND="-DPRE_RELEASE=0 -fno-plt $(cppflags)" dpkg-buildflags --export=configure) LIBS="$(libs)"

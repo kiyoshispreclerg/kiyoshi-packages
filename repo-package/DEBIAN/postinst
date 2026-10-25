@@ -25,6 +25,20 @@ if [ "$1" = configure ]; then
         echo "kiyoshi-packages-repo: unsupported system, no apt source written" >&2
         echo "(supported: Ubuntu 22.04/24.04, Debian 12/13, Devuan 5/6)" >&2
     else
+        # A manual setup for the same repository (other Signed-By) would make
+        # apt refuse both: set aside the files that only hold this repository.
+        for f in /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+            [ -f "$f" ] && [ "$f" != "$LIST" ] || continue
+            grep -qF "$URL" "$f" || continue
+            # entry lines: "deb ..." in .list files, "URIs:" in .sources files
+            others="$(grep -E '^[[:space:]]*(deb|deb-src|URIs:)' "$f" | grep -cvF "$URL" || true)"
+            if [ "$others" -eq 0 ]; then
+                mv "$f" "$f.save"
+                echo "kiyoshi-packages-repo: $f replaced by $LIST (old file kept as $f.save)"
+            else
+                echo "kiyoshi-packages-repo: $f also lists this repository; remove it if apt reports a Signed-By conflict" >&2
+            fi
+        done
         db_get kiyoshi-packages-repo/channel || RET=none
         comps=main
         case "$RET" in stable|beta) comps="main $RET" ;; esac

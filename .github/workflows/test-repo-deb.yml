@@ -31,7 +31,15 @@ jobs:
                   apt-get install -y --no-install-recommends ca-certificates curl
                   owner="${GITHUB_REPOSITORY%%/*}"
                   curl -fsSL -o /tmp/repo.deb "https://${owner,,}.github.io/${GITHUB_REPOSITORY#*/}/kiyoshi-packages-repo_all.deb"
+                  # a previous manual setup (other Signed-By) must not conflict
+                  url="https://${owner,,}.github.io/${GITHUB_REPOSITORY#*/}"
+                  dpkg-deb -x /tmp/repo.deb /tmp/x
+                  install -D -m 0644 /tmp/x/usr/share/keyrings/kiyoshi-packages.gpg /etc/apt/keyrings/kiyoshi-packages.gpg
+                  echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] $url ${{ matrix.suite }} main" > /etc/apt/sources.list.d/kiyoshi-packages.list
+                  apt-get update
                   apt-get install -y /tmp/repo.deb
+                  test -f /etc/apt/sources.list.d/kiyoshi-packages.list.save
+                  test ! -e /etc/apt/sources.list.d/kiyoshi-packages.list
             - name: check source, key and apt update
               run: |
                   set -eux

@@ -51,6 +51,7 @@ xis)
       done
       grep -rlZ 'xserver-xlibre-core' . | xargs -0 perl -pi -e 's/xserver-xlibre-core(?!-udeb)/xserver-xis-core/g'
       perl -0pi -e '
+          s{^Homepage: https://github.com/X11Libre[ \t]*$}{Homepage: https://github.com/kiyoshispreclerg/xserver}m;
           s/(Package: xserver-xis-core\n.*?)\nDescription: XLibre X server - core server\n/$1\nDescription: XiS X server - core server (fork of XLibre)\n XiS is a fork of the XLibre X server. This package is a drop-in replacement\n for xserver-xlibre-core: it provides, conflicts with and replaces it.\n .\n/s;
           s/(Package: xserver-xis-core\n.*?Provides:\n)/$1 xserver-xlibre-core (= \${binary:Version}),\n/s;
           s/(Package: xserver-xis-core\n.*?Conflicts:\n)/$1 xserver-xlibre-core,\n/s;

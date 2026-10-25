@@ -42,7 +42,8 @@ jobs:
                   test -s /usr/share/keyrings/kiyoshi-packages.gpg
                   apt-get update 2>&1 | tee /tmp/update.log
                   if grep -Ei '^(E|W):' /tmp/update.log; then exit 1; fi
-                  apt-cache policy kiyoshi-packages-repo | grep -q kiyoshi
+                  policy="$(apt-cache policy kiyoshi-packages-repo)"
+                  grep -q kiyoshispreclerg <<<"$policy"
             - name: change channel to beta
               run: |
                   set -eux

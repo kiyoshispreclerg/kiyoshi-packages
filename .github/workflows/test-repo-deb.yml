@@ -6,6 +6,9 @@ on:
     workflow_dispatch:
 permissions:
     contents: read
+defaults:
+    run:
+        shell: bash
 jobs:
     test:
         runs-on: ubuntu-24.04
@@ -38,7 +41,7 @@ jobs:
                   grep -q '^Components: main$' "$f"
                   test -s /usr/share/keyrings/kiyoshi-packages.gpg
                   apt-get update 2>&1 | tee /tmp/update.log
-                  ! grep -Ei '^(E|W):' /tmp/update.log
+                  if grep -Ei '^(E|W):' /tmp/update.log; then exit 1; fi
                   apt-cache policy kiyoshi-packages-repo | grep -q kiyoshi
             - name: change channel to beta
               run: |
@@ -51,7 +54,7 @@ jobs:
               run: |
                   set -eux
                   apt-get remove -y kiyoshi-packages-repo
-                  ! test -e /etc/apt/sources.list.d/kiyoshi-packages.sources
-                  ! test -e /usr/share/keyrings/kiyoshi-packages.gpg
+                  if test -e /etc/apt/sources.list.d/kiyoshi-packages.sources; then echo 'source left behind'; exit 1; fi
+                  if test -e /usr/share/keyrings/kiyoshi-packages.gpg; then echo 'key left behind'; exit 1; fi
                   apt-get purge -y kiyoshi-packages-repo
                   apt-get update

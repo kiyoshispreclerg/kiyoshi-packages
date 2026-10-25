@@ -1,0 +1,8 @@
+Template: kiyoshi-packages-repo/channel
+Type: select
+Choices: none, stable, beta
+Default: none
+Description: XLibre channel to enable:
+ The repository always offers the Kiyoshi programs. Choose which XLibre X
+ server channel to enable as well: "stable" (XLibre 25.1), "beta" (XLibre 25.2
+ and XiS), or "none" for the programs only. Enable at most one.

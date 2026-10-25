@@ -50,7 +50,17 @@ for key in "${!best_file[@]}"; do
     reprepro -b repo-work -C "$comp" includedeb "$suite" "${best_file[$key]}"
 done
 
+# kiyoshi-packages-repo (key + apt source for the running system): in every
+# suite's main, and as a fixed-name file at the site root for browser download.
+owner="${self%%/*}"; url="https://${owner,,}.github.io/${self#*/}"
+gpg --export "$keyid" > repo-work/key.gpg
+scripts/build-repo-deb.sh repo-work/key.gpg repo-work/kiyoshi-packages-repo_all.deb "$url"
+for suite in jammy noble bookworm trixie; do
+    reprepro -b repo-work -C main includedeb "$suite" repo-work/kiyoshi-packages-repo_all.deb
+done
+
 mv repo-work/dists repo-work/pool site/ 2>/dev/null || true
+cp repo-work/kiyoshi-packages-repo_all.deb site/
 [ -d site/dists ] || { echo "publish: empty pool, creating empty suites"; reprepro -b repo-work export; mv repo-work/dists site/; mkdir -p site/pool; }
 gpg --export "$keyid" > site/kiyoshi-packages.gpg
 cp repo/index.html site/index.html

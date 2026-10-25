@@ -1,4 +1,4 @@
-# Builds XLibre (upstream, via NexusSfan's Debian packaging) and xlibre-xis-core
+# Builds XLibre (upstream, via NexusSfan's Debian packaging) and xserver-xis-core
 # (the XiS fork) on each target, in a container of that distro, then installs
 # them in a clean container of the same distro and checks them.
 name: XLibre
@@ -9,7 +9,7 @@ on:
     workflow_dispatch:
         inputs:
             build_xis:
-                description: 'Also build xlibre-xis-core (XiS) in the beta channel'
+                description: 'Also build xserver-xis-core (XiS) in the beta channel'
                 type: boolean
                 default: false
             xis_ref:
@@ -19,7 +19,7 @@ on:
                 description: 'XiS release revision (1, 2, ...); empty = git snapshot'
                 required: false
             only:
-                description: 'Only these sources (space separated names from sources.txt, or xlibre-xis-core); empty = all'
+                description: 'Only these sources (space separated names from sources.txt, or xserver-xis-core); empty = all'
                 required: false
             release:
                 description: 'Add the result to the apt repository'

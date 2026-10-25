@@ -22,7 +22,7 @@ STABLE_REF="${STABLE_REF:-latest:xlibre-xserver-25\.1\.[0-9]+}"
 STABLE_PACKAGING_REF=2eefc79ccda036c06ab717d1302bc179f695d1e7   # debian/ at 2:25.1.7-1
 
 # ---- XiS -----------------------------------------------------------------------
-# The Kiyoshi fork of XLibre (25.2 based), packaged as xlibre-xis-core: a drop-in
+# The Kiyoshi fork of XLibre (25.2 based), packaged as xserver-xis-core: a drop-in
 # alternative to the beta xserver-xlibre-core. Built from a tag of the fork's
 # release branch, taken from the same 25.2 tag as the beta plus the XiS changes.
 # XIS_REF: a tag, a branch, a sha, or latest:<regex> (e.g. latest:xis-25\.2\..*).

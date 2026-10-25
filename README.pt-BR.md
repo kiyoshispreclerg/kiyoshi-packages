@@ -20,6 +20,17 @@ Arquitetura: `amd64`.
 
 ## Como usar
 
+### Jeito fácil: um pacote só
+
+Baixe o [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages-repo_all.deb)
+e instale (duplo clique, ou `sudo apt install ./kiyoshi-packages-repo_all.deb`).
+Ele instala a chave e grava a fonte do apt do seu sistema (Ubuntu 22.04/24.04,
+Debian 12/13, Devuan 5/6); depois, `sudo apt update`. Ele pergunta qual canal do
+XLibre ativar (nenhum, `stable` ou `beta`); para mudar depois:
+`sudo dpkg-reconfigure kiyoshi-packages-repo`. Remover o pacote remove a fonte e a chave.
+
+### Manualmente
+
 ```sh
 sudo install -d -m 0755 /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg \
@@ -51,16 +62,16 @@ mais um `x11proto-dev` mais novo.
 Ative **um só** entre `stable` e `beta`, não os dois.
 
 <!-- XiS desligado por enquanto (workflow XLibre: build_xis)
-### xlibre-xis-core
+### xserver-xis-core
 
-O `xlibre-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi, baseado no
+O `xserver-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi, baseado no
 25.2) como substituto direto do `xserver-xlibre-core` da beta. Ele fornece,
 conflita e substitui esse pacote: você instala o que preferir e o resto
 (drivers, `xserver-xlibre`) continua funcionando com qualquer um:
 
 ```sh
 sudo apt install xserver-xlibre-core    # XLibre beta
-sudo apt install xlibre-xis-core        # XiS: substitui o xserver-xlibre-core
+sudo apt install xserver-xis-core        # XiS: substitui o xserver-xlibre-core
 ```
 -->
 
@@ -87,7 +98,7 @@ compilados neste repositório. Todo `.deb` fica guardado como asset do Release
 `pool`, e o workflow `Publish` reconstrói o repositório inteiro a partir dele
 com `reprepro`, assina e publica no GitHub Pages.
 
-- `xlibre/`: scripts de build do XLibre (stable, beta) e do `xlibre-xis-core`
+- `xlibre/`: scripts de build do XLibre (stable, beta) e do `xserver-xis-core`
 - `packages.yml`: projetos cujos releases são importados
 - `scripts/`, `repo/`: ingest e publish
 - `.github/workflows/`: CI

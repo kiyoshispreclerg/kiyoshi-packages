@@ -4,12 +4,19 @@
 <body style="font:16px/1.5 system-ui;max-width:42rem;margin:2rem auto;padding:0 1rem">
 <h1>kiyoshi-packages</h1>
 <p>Repositório apt para Ubuntu 22.04/24.04 e Debian 12/13 (e Devuan 5/6).</p>
+<p><b>Jeito fácil:</b> baixe <a href="kiyoshi-packages-repo_all.deb">kiyoshi-packages-repo_all.deb</a>
+e instale (duplo clique no gerenciador de pacotes, ou
+<code>sudo apt install ./kiyoshi-packages-repo_all.deb</code>). Ele instala a chave e a
+fonte apt do seu sistema; depois é só <code>sudo apt update</code>. Para escolher o canal do XLibre
+(nenhum, <code>stable</code> ou <code>beta</code>): <code>sudo dpkg-reconfigure kiyoshi-packages-repo</code>.
+Remover o pacote remove a fonte e a chave.</p>
+<p>Ou manualmente:</p>
 <pre>sudo install -d -m 0755 /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg URL/kiyoshi-packages.gpg
 echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] URL SUITE main beta" |
   sudo tee /etc/apt/sources.list.d/kiyoshi-packages.list
 sudo apt update</pre>
-<p>Components: <code>main</code> (programs), plus <b>one</b> of <code>stable</code> (XLibre 25.1) or <code>beta</code> (XLibre 25.2 and xlibre-xis-core).</p>
+<p>Components: <code>main</code> (programs), plus <b>one</b> of <code>stable</code> (XLibre 25.1) or <code>beta</code> (XLibre 25.2 and xserver-xis-core).</p>
 <p>SUITE: <code>jammy</code> (Ubuntu 22.04), <code>noble</code> (24.04),
 <code>bookworm</code> (Debian 12, Devuan 5), <code>trixie</code> (Debian 13, Devuan 6).</p>
 </body></html>

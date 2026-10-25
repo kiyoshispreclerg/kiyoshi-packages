@@ -2,7 +2,7 @@
 # test-install.sh DEBDIR CHANNEL   (CHANNEL = stable | beta)
 # In a clean container of the target (no build tools): install the XLibre
 # packages from DEBDIR as a flat repository, check they work, switch to
-# xlibre-xis-core and back, and purge.
+# xserver-xis-core and back, and purge.
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 debs="$(cd "${1:?usage: test-install.sh DEBDIR CHANNEL}" && pwd)"
@@ -56,18 +56,18 @@ CONF
 }
 dummy_check xserver-xlibre-core
 
-if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xlibre-xis-core_*.deb' -print -quit)" ]; then
-step "switch to xlibre-xis-core"
-apt-get install -y --no-install-recommends xlibre-xis-core
-if installed xserver-xlibre-core; then fail "xserver-xlibre-core still installed next to xlibre-xis-core"; fi
+if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xserver-xis-core_*.deb' -print -quit)" ]; then
+step "switch to xserver-xis-core"
+apt-get install -y --no-install-recommends xserver-xis-core
+if installed xserver-xlibre-core; then fail "xserver-xlibre-core still installed next to xserver-xis-core"; fi
 installed xserver-xlibre-input-libinput || fail "driver removed by the switch"
 apt-get check >/dev/null || fail "apt-get check after switch"
 Xorg -version 2>&1 | sed -n '1,3p'
-dummy_check xlibre-xis-core
+dummy_check xserver-xis-core
 
 step "switch back to xserver-xlibre-core"
 apt-get install -y --no-install-recommends xserver-xlibre-core
-if installed xlibre-xis-core; then fail "xlibre-xis-core still installed"; fi
+if installed xserver-xis-core; then fail "xserver-xis-core still installed"; fi
 apt-get check >/dev/null || fail "apt-get check after switching back"
 
 fi

@@ -1,7 +1,7 @@
 # kiyoshi-packages: plano
 
 > **Atualização (22/10/2026):** este é o plano inicial. Duas decisões mudaram:
-> o XiS **não** vai mais em `/opt/xis`: virou o pacote `xlibre-xis-core`, no
+> o XiS **não** vai mais em `/opt/xis`: virou o pacote `xserver-xis-core`, no
 > caminho padrão do sistema, substituto direto do `xserver-xlibre-core` da beta
 > (25.2); e o XLibre upstream entrou, em dois canais (`stable` 25.1, `beta`
 > 25.2), como componentes do apt. As seções 6 e 8 estão superadas por
@@ -84,7 +84,7 @@ se o Release tiver `.deb` que não deve entrar).
 ### 0.3 XLibre `stable` e `beta`
 
 Ficam no workflow **XLibre**: compila os 4 alvos nos 2 canais, instala cada
-conjunto num container limpo (e testa a troca para o `xlibre-xis-core`) e, só
+conjunto num container limpo (e testa a troca para o `xserver-xis-core`) e, só
 com `release` marcado, anexa os `.deb` ao pool e chama o Publish. Ele só roda
 quando você o dispara à mão (um push não o inicia): faça isso quando houver tag
 nova do upstream.
@@ -118,7 +118,7 @@ nova do upstream.
 * Drivers marcados `no` em `sources.txt` que falham não travam o resto: o log
   mostra `not built: ...` e um aviso.
 
-### 0.4 XiS (`xlibre-xis-core`)
+### 0.4 XiS (`xserver-xis-core`)
 
 > **Desligado por enquanto**: o fork ainda precisa de ajustes para ser
 > compatível com a 25.2. O workflow **XLibre** só o compila com o campo
@@ -139,7 +139,7 @@ a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
   todas. Vazio gera um **snapshot** (`...-1xis0~git<sha>~alvo`), que perde para
   qualquer N >= 1. A versão do upstream é a do `meson.build` da árvore do XiS,
   então a tag do fork precisa continuar dizendo `25.2.2`;
-* `only`: `xlibre-xis-core` compila só o XiS (e o `xorgproto` de que ele precisa),
+* `only`: `xserver-xis-core` compila só o XiS (e o `xorgproto` de que ele precisa),
   sem o teste de instalação; ideal para atualizar o XiS sem refazer o XLibre
   inteiro. Com `release` marcado, só o XiS é anexado ao pool.
 
@@ -148,7 +148,7 @@ upstream, quantas vezes você quiser, só incrementando `revision`.
 
 Receita para publicar uma versão do XiS: crie a tag no `xserver` e dê push, rode
 **XLibre** com `xis_ref` = a tag, `revision` = próximo número, `only` =
-`xlibre-xis-core`, `build_xis` e `release` marcado.
+`xserver-xis-core`, `build_xis` e `release` marcado.
 
 ### 0.5 Retirar uma versão
 
@@ -371,8 +371,10 @@ O que existe: o `xserver-xlibre-core` oficial tem `Provides: xserver-xorg-core
 `Conflicts: xserver-xorg-core`; instala em `/usr/bin/Xorg` e
 `/usr/lib/xorg/modules/xlibre-25/`. Os drivers (`xserver-xlibre-input-libinput`
 etc.) dependem dele. Fonte do empacotamento: `github.com/xlibre-debian/xlibre-server`,
-branch `xlibre/latest`, pasta `debian/` (repositório de NexusSfan). Os binários
-vêm de `https://xlibre-debian.github.io/<ubuntu|debian|devuan>/`.
+branch `xlibre/latest`, pasta `debian/` (repositório de NexusSfan), hoje **copiada
+em `xlibre/packaging/`**. Os binários dele vêm de
+`https://xlibre-debian.github.io/<ubuntu|debian|devuan>/`; **nós não usamos
+esses binários**, compilamos tudo (ver seção 11).
 
 Por que isto não serve nos alvos antigos como está:
 
@@ -569,6 +571,91 @@ Montagem: `reprepro -b repo includedeb jammy pacote.deb`. Publicar **só**
 | 3 | `xis-dm` testado em LightDM e SDDM reais | sessão iniciando com XiS |
 | 4 | obs-studio: build de teste nos 4 alvos (descobrir o que falta); decidir nome e coexistência | `.deb` instala e abre |
 | 5 | XLibre integrado (seção 6) e drivers | só depois de 1 a 4 |
+
+---
+
+## 11. Independência: e se o `xlibre-debian` (ou o X11Libre) sair do ar?
+
+### Situação hoje (verificada no código, 24/10/2026)
+
+| Dependência | Usada em | Se sumir hoje |
+|---|---|---|
+| `github.com/xlibre-debian/*` (empacotamento do NexusSfan) | **só** `xlibre/scripts/vendor-packaging.sh`, que atualiza a cópia | **Nada quebra.** Os builds leem `xlibre/packaging/` (copiado, com os commits fixados em `xlibre/packaging/SOURCES`). Perdemos só as atualizações do empacotamento dele. As demais menções (`Vcs-Git`/`Vcs-Browser` nos `debian/control`, `SUPPORT` no `rules.flags`) são texto de metadados, não são acessadas |
+| `github.com/X11Libre/*` (**o código** do servidor, drivers, `xorgproto`) | todo build: `git_fetch` em `lib.sh`, a cada execução, por tag | **Novos builds falham** (`git ls-remote` / `fetch`). É a dependência real e hoje não tem plano B |
+| `github.com/kiyoshispreclerg/xserver` (XiS) | build do `xserver-xis-core` | É seu: só depende do GitHub |
+| Arquivos Debian/Ubuntu (`apt`) dentro dos containers de build | `install_build_deps`, `bootstrap.sh` | Os arquivos de versões antigas continuam (`archive.debian.org`, `old-releases.ubuntu.com`) mas o espelho do Azure usado no CI é decisão do runner |
+| GitHub (Actions, Releases, Pages) | compilar, guardar os `.deb`, servir | Tudo para. É a dependência de plataforma (o repositório apt é estático e migra) |
+| Chave GPG | assinar o repositório | Sem ela, ninguém aceita as atualizações. Backup obrigatório (decisão em aberto 3) |
+
+Os `.deb` **já publicados** ficam como assets dos Releases do **nosso**
+repositório; o `publish` os remonta de lá. Portanto: o que já foi liberado
+continua instalável, com `xlibre-debian` fora do ar ou não. O que se perde é a
+capacidade de **compilar versões novas**.
+
+### Resposta curta: manteremos tudo?
+
+* **Se só o `xlibre-debian` sair:** sim, sem mudança. Stable (25.1.x), beta
+  (25.2.x), drivers e pacotes de apoio seguem sendo compilados do código do
+  X11Libre com o `debian/` que já está aqui. O que passa a ser nosso trabalho é
+  adaptar o `debian/` a tags novas do upstream (hoje o NexusSfan faz isso; o
+  stable já está fixado no `debian/` do 25.1.7 por isso).
+* **Se o X11Libre também sair:** só mantemos se tivermos o código. Hoje não
+  temos cópia. Com as medidas abaixo, sim: o código fica espelhado e passamos a
+  ser os mantenedores (correções de segurança incluídas).
+
+### Medidas, em ordem de custo/benefício
+
+1. **Espelhar o código-fonte (a mais importante).** Script
+   `xlibre/scripts/mirror-upstream.sh` que, para cada repositório de
+   `sources.txt` (+ `xserver`), faz `git clone --mirror` e `git bundle create`,
+   e anexa os bundles a um Release `upstream-src` deste repositório (workflow
+   agendado, semanal, e após cada release). Alternativa: forks/espelhos em
+   `github.com/<nossa-conta>/*`. Como `UPSTREAM_BASE` já é variável em
+   `versions.sh`, **trocar de origem é uma linha**; para bundles, `git_fetch`
+   ganha um modo `UPSTREAM_BUNDLES=<dir>`.
+2. **Publicar o fonte junto dos binários.** Hoje só vão `.deb`. Gerar também
+   `.dsc` + `.orig.tar.xz` + `.debian.tar.xz` (`dpkg-source -b`) e incluir na
+   suite (`deb-src`). Serve de backup do código **exatamente** compilado e
+   atende a obrigação das licenças (GPL/MIT) de oferecer o fonte.
+3. **Fixar também a entrada do código**, não só do empacotamento: registrar no
+   `BUILD-INFO` (já grava `code=repo@tag(sha)`) e no Release o sha de cada
+   build, para reconstruir qualquer versão publicada.
+4. **Congelar e assumir o `debian/`:** ao ser preciso, remover o
+   `vendor-packaging.sh` do fluxo, trocar `Vcs-Git`/`Vcs-Browser`/`SUPPORT` para
+   o nosso repositório (via `sed` no `adapt_control`, sem tocar em
+   `copyright` nem no histórico do `changelog`; o `XSBC-Original-Maintainer`
+   continua) e manter `debian/patches` e o `changelog` aqui.
+5. **O que as distros não têm (seção 5):** `xorgproto` novo e `libdrm` do XiS
+   vêm de fontes fixadas por commit/tag; entram no espelho da medida 1
+   (`mirror.fdo.xorgproto` está em `sources.txt`; `libdrm` e `xorgproto` do
+   freedesktop, em `gitlab.freedesktop.org`, ganham entrada própria).
+6. **Pacotes de bibliotecas "para sistemas antigos":** hoje o repositório os
+   cria só durante o build (ex.: `x11proto-dev` a partir do `xorgproto`). Se
+   forem publicados como pacotes, eles entram no mesmo `publish`; o fonte
+   deles segue a medida 2.
+7. **Hospedagem fora do GitHub (plano C):** o repositório apt é estático.
+   Um workflow semanal copia `dists/` + `pool/` (`rclone`/`rsync`) para um
+   segundo destino (VPS próprio, Cloudflare R2, etc.). Se o GitHub falhar, basta
+   apontar um domínio; recomendável usar um domínio nosso desde já nas
+   instruções de usuário, para trocar o destino sem mudar o `sources.list`
+   de ninguém (decisão em aberto 2).
+8. **Backup da chave GPG e dos Releases:** cópia criptografada fora do GitHub
+   (a privada nunca no repositório).
+9. **Teste do plano:** um workflow manual `offline-check` que builda o
+   `xlibre-server` e um driver apontando `UPSTREAM_BASE` para o espelho
+   (medida 1) e sem acesso ao `xlibre-debian`; se passar, o plano B funciona.
+
+### Custo de ser mantenedor se tudo sumir
+
+Estimativa: a base atual (25.1/25.2) fica estável por meses sem trabalho; o
+custo é acompanhar CVEs do servidor X (vindos de `xorg-security` e do Debian
+Security Tracker, que seguem públicos), reaplicar patches e adaptar o `debian/`
+quando o `meson.build` mudar. Os drivers são pequenos e mudam pouco.
+
+### Ordem sugerida
+
+(1) e (2) primeiro, em uma tarde; (9) valida; (7) e (8) quando o domínio e o
+armazenamento forem escolhidos; (4) só se o cenário se concretizar.
 
 ---
 

@@ -4,13 +4,13 @@
 # stable, beta: xlibre-server from the official X11Libre/xserver tag (STABLE_REF,
 #         BETA_REF in versions.sh: the newest 25.1.x / 25.2.x tag) inside the
 #         vendored debian/ (xlibre/packaging/xlibre-server[-stable]). All its binary packages are published.
-# xis:    xlibre-xis-core, the XiS fork (25.2 based) as a drop-in for the beta
+# xis:    xserver-xis-core, the XiS fork (25.2 based) as a drop-in for the beta
 #         xserver-xlibre-core: the same packaging with the XiS tree and the core
 #         package renamed. It Provides/Conflicts/Replaces xserver-xlibre-core, so
 #         the user installs one or the other and the rest of XLibre (drivers,
 #         xserver-xlibre, ...) is satisfied by either. The other binary packages
 #         are built too (dh_missing requires it) but discarded; only
-#         xlibre-xis-core_*.deb is kept.
+#         xserver-xis-core_*.deb is kept.
 #
 # Environment (xis): XIS_URL, XIS_REF (versions.sh), XIS_REVISION (release
 # number; empty = snapshot with the git hash in the version).
@@ -36,26 +36,26 @@ stable|beta)
     ;;
 xis)
     [ "$CHANNEL" = beta ] || die "XiS only in the beta channel"
-    dest="$OUT/beta/xlibre-xis-core"
+    dest="$OUT/beta/xserver-xis-core"
     use_packaging xlibre-server "$src"
     xref="$(git_fetch "$tree" "$XIS_URL" "$XIS_REF")"
     sha="$(git -C "$tree" rev-parse --short=7 HEAD)"
-    step "xlibre-xis-core = vendored xlibre-server + XiS $xref ($XIS_URL)"
-    echo "xlibre-xis-core packaging=vendored:xlibre-server code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+    step "xserver-xis-core = vendored xlibre-server + XiS $xref ($XIS_URL)"
+    echo "xserver-xis-core packaging=vendored:xlibre-server code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
 
     # Rename the core package (not the udeb) in file names and contents.
     ( cd "$src/debian" || exit
       for f in xserver-xlibre-core.*; do
-          [ -e "$f" ] && mv "$f" "xlibre-xis-core.${f#xserver-xlibre-core.}"
+          [ -e "$f" ] && mv "$f" "xserver-xis-core.${f#xserver-xlibre-core.}"
       done
-      grep -rlZ 'xserver-xlibre-core' . | xargs -0 perl -pi -e 's/xserver-xlibre-core(?!-udeb)/xlibre-xis-core/g'
+      grep -rlZ 'xserver-xlibre-core' . | xargs -0 perl -pi -e 's/xserver-xlibre-core(?!-udeb)/xserver-xis-core/g'
       perl -0pi -e '
-          s/(Package: xlibre-xis-core\n.*?)\nDescription: XLibre X server - core server\n/$1\nDescription: XiS X server - core server (XLibre fork)\n/s;
-          s/(Package: xlibre-xis-core\n.*?Provides:\n)/$1 xserver-xlibre-core (= \${binary:Version}),\n/s;
-          s/(Package: xlibre-xis-core\n.*?Conflicts:\n)/$1 xserver-xlibre-core,\n/s;
-          s/(Package: xlibre-xis-core\n.*?Replaces:\n)/$1 xserver-xlibre-core,\n/s;
-          s/(Package: xlibre-xis-core\n.*?) xserver-xlibre-common \(>= \$\{source:Version\}\)/$1 xserver-xlibre-common/s;
+          s/(Package: xserver-xis-core\n.*?)\nDescription: XLibre X server - core server\n/$1\nDescription: XiS X server - core server (fork of XLibre)\n XiS is a fork of the XLibre X server. This package is a drop-in replacement\n for xserver-xlibre-core: it provides, conflicts with and replaces it.\n .\n/s;
+          s/(Package: xserver-xis-core\n.*?Provides:\n)/$1 xserver-xlibre-core (= \${binary:Version}),\n/s;
+          s/(Package: xserver-xis-core\n.*?Conflicts:\n)/$1 xserver-xlibre-core,\n/s;
+          s/(Package: xserver-xis-core\n.*?Replaces:\n)/$1 xserver-xlibre-core,\n/s;
+          s/(Package: xserver-xis-core\n.*?) xserver-xlibre-common \(>= \$\{source:Version\}\)/$1 xserver-xlibre-common/s;
       ' control )
 
     # Version: 2:<upstream>-<packaging rev>xis<N>~<target>, e.g. 2:25.2.2-1xis2~jammy.
@@ -69,7 +69,7 @@ xis)
     prel="${cur##*-}"; prel="${prel%%[!0-9]*}"; prel="${prel:-1}"
     if [ -n "${XIS_REVISION:-}" ]; then rev="${prel}xis${XIS_REVISION}"; else rev="${prel}xis0~git${sha}"; fi
     ( cd "$src" && dch -b -v "2:${up}-${rev}~${TARGET}" -D unstable --force-distribution \
-        "XiS ${xref} (${sha}) as xlibre-xis-core" )
+        "XiS ${xref} (${sha}) as xserver-xis-core" )
     profiles="noudeb"
     ;;
 *) die "unknown mode $mode" ;;
@@ -81,7 +81,7 @@ install_build_deps "$src"
 
 rm -rf "$dest"; mkdir -p "$dest"
 if [ "$mode" = xis ]; then
-    mv "$WORK"/src/xlibre-xis-core_*.deb "$dest/" 2>/dev/null || die "xlibre-xis-core .deb not produced"
+    mv "$WORK"/src/xserver-xis-core_*.deb "$dest/" 2>/dev/null || die "xserver-xis-core .deb not produced"
 else
     find "$WORK/src" -maxdepth 1 -name '*-dbgsym_*' -delete
     find "$WORK/src" -maxdepth 1 -name '*.deb' -exec mv {} "$dest/" \;

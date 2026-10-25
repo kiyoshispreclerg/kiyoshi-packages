@@ -20,6 +20,18 @@ Architecture: `amd64`.
 
 ## Use it
 
+### Easy way: one package
+
+Download [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages-repo_all.deb)
+and install it (double-click, or `sudo apt install ./kiyoshi-packages-repo_all.deb`).
+It installs the key and writes the apt source for your system (Ubuntu 22.04/24.04,
+Debian 12/13, Devuan 5/6); then `sudo apt update`. It asks which XLibre channel to
+enable (none, `stable` or `beta`); change it later with
+`sudo dpkg-reconfigure kiyoshi-packages-repo`. Removing the package removes the
+source and the key.
+
+### Manually
+
 ```sh
 sudo install -d -m 0755 /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg \
@@ -50,16 +62,16 @@ names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
 Enable **one** of `stable` and `beta`, not both.
 
 <!-- XiS desligado por enquanto (workflow XLibre: build_xis)
-### xlibre-xis-core
+### xserver-xis-core
 
-`xlibre-xis-core` is the XiS server (Kiyoshi's XLibre fork, based on 25.2) as a
+`xserver-xis-core` is the XiS server (Kiyoshi's XLibre fork, based on 25.2) as a
 drop-in replacement for the beta `xserver-xlibre-core`. It provides, conflicts
 with and replaces it, so you install the one you prefer and everything else
 (drivers, `xserver-xlibre`) keeps working with either:
 
 ```sh
 sudo apt install xserver-xlibre-core    # XLibre beta
-sudo apt install xlibre-xis-core        # XiS: replaces xserver-xlibre-core
+sudo apt install xserver-xis-core        # XiS: replaces xserver-xlibre-core
 ```
 -->
 

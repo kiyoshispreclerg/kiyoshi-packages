@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+case "$1" in
+    remove|purge) rm -f /etc/apt/sources.list.d/kiyoshi-packages.sources ;;
+esac
+if [ "$1" = purge ] && [ -e /usr/share/debconf/confmodule ]; then
+    . /usr/share/debconf/confmodule
+    db_purge || true
+    db_stop || true
+fi
+exit 0

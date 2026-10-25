@@ -1,0 +1,57 @@
+# Installs kiyoshi-packages-repo_all.deb, downloaded from the published site,
+# in a clean container of each target, and checks key, source, apt update,
+# the channel choice and removal. Run it after Publish.
+name: Test repo deb
+on:
+    workflow_dispatch:
+permissions:
+    contents: read
+jobs:
+    test:
+        runs-on: ubuntu-24.04
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - { image: 'ubuntu:22.04', suite: jammy }
+                    - { image: 'ubuntu:24.04', suite: noble }
+                    - { image: 'debian:12', suite: bookworm }
+                    - { image: 'debian:13', suite: trixie }
+        container: ${{ matrix.image }}
+        env:
+            DEBIAN_FRONTEND: noninteractive
+        steps:
+            - name: install the deb
+              run: |
+                  set -eux
+                  apt-get update
+                  apt-get install -y --no-install-recommends ca-certificates curl
+                  owner="${GITHUB_REPOSITORY%%/*}"
+                  curl -fsSL -o /tmp/repo.deb "https://${owner,,}.github.io/${GITHUB_REPOSITORY#*/}/kiyoshi-packages-repo_all.deb"
+                  apt-get install -y /tmp/repo.deb
+            - name: check source, key and apt update
+              run: |
+                  set -eux
+                  f=/etc/apt/sources.list.d/kiyoshi-packages.sources
+                  cat "$f"
+                  grep -q '^Suites: ${{ matrix.suite }}$' "$f"
+                  grep -q '^Components: main$' "$f"
+                  test -s /usr/share/keyrings/kiyoshi-packages.gpg
+                  apt-get update 2>&1 | tee /tmp/update.log
+                  ! grep -Ei '^(E|W):' /tmp/update.log
+                  apt-cache policy kiyoshi-packages-repo | grep -q kiyoshi
+            - name: change channel to beta
+              run: |
+                  set -eux
+                  echo 'kiyoshi-packages-repo kiyoshi-packages-repo/channel select beta' | debconf-set-selections
+                  dpkg-reconfigure -f noninteractive kiyoshi-packages-repo
+                  grep -q '^Components: main beta$' /etc/apt/sources.list.d/kiyoshi-packages.sources
+                  apt-get update
+            - name: remove and purge
+              run: |
+                  set -eux
+                  apt-get remove -y kiyoshi-packages-repo
+                  ! test -e /etc/apt/sources.list.d/kiyoshi-packages.sources
+                  ! test -e /usr/share/keyrings/kiyoshi-packages.gpg
+                  apt-get purge -y kiyoshi-packages-repo
+                  apt-get update

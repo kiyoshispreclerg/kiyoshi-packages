@@ -130,7 +130,7 @@ jobs:
               with:
                   name: xlibre-debs-${{ matrix.channel }}-${{ matrix.name }}
                   path: debs
-            - run: xlibre/scripts/test-install.sh debs ${{ matrix.channel }}
+            - run: xlibre/scripts/test-install.sh debs
 
     release:
         name: add to the apt repository

@@ -1,12 +1,11 @@
 #!/bin/bash
-# test-install.sh DEBDIR CHANNEL   (CHANNEL = stable | beta)
+# test-install.sh DEBDIR
 # In a clean container of the target (no build tools): install the XLibre
 # packages from DEBDIR as a flat repository, check they work, switch to
 # xserver-xis-core and back, and purge.
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
-debs="$(cd "${1:?usage: test-install.sh DEBDIR CHANNEL}" && pwd)"
-channel="${2:?channel}"
+debs="$(cd "${1:?usage: test-install.sh DEBDIR}" && pwd)"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 # installed PKG: really installed (a removed package with config files left is not)
 installed() { [ "$(dpkg-query -W -f='${db:Status-Status}' "$1" 2>/dev/null)" = installed ]; }

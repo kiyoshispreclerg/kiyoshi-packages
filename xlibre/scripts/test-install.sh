@@ -56,7 +56,7 @@ CONF
 }
 dummy_check xserver-xlibre-core
 
-if [ "$channel" = beta ] && [ -n "$(find "$debs" -name 'xserver-xis-core_*.deb' -print -quit)" ]; then
+if [ -n "$(find "$debs" -name 'xserver-xis-core_*.deb' -print -quit)" ]; then
 step "switch to xserver-xis-core"
 apt-get install -y --no-install-recommends xserver-xis-core
 if installed xserver-xlibre-core; then fail "xserver-xlibre-core still installed next to xserver-xis-core"; fi

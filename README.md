@@ -61,19 +61,18 @@ names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
 
 Enable **one** of `stable` and `beta`, not both.
 
-<!-- XiS desligado por enquanto (workflow XLibre: build_xis)
 ### xserver-xis-core
 
-`xserver-xis-core` is the XiS server (Kiyoshi's XLibre fork, based on 25.2) as a
-drop-in replacement for the beta `xserver-xlibre-core`. It provides, conflicts
+`xserver-xis-core` is the XiS server (Kiyoshi's XLibre fork) as a
+drop-in replacement for `xserver-xlibre-core`, in both `stable` (based on XLibre
+25.1) and `beta` (25.2). It provides, conflicts
 with and replaces it, so you install the one you prefer and everything else
 (drivers, `xserver-xlibre`) keeps working with either:
 
 ```sh
-sudo apt install xserver-xlibre-core    # XLibre beta
+sudo apt install xserver-xlibre-core    # XLibre
 sudo apt install xserver-xis-core        # XiS: replaces xserver-xlibre-core
 ```
--->
 
 ## Programs
 

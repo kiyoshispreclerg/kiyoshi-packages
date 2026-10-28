@@ -1,6 +1,7 @@
 # Builds XLibre (upstream, via NexusSfan's Debian packaging) and xserver-xis-core
-# (the XiS fork) on each target, in a container of that distro, then installs
-# them in a clean container of the same distro and checks them.
+# (the XiS fork, from the xis-* tag matching the XLibre tag of each channel) on
+# each target, in a container of that distro, then installs them in a clean
+# container of the same distro and checks them.
 name: XLibre
 
 # Manual only: it takes hours, so it runs when you start it (Actions > XLibre >
@@ -8,15 +9,8 @@ name: XLibre
 on:
     workflow_dispatch:
         inputs:
-            build_xis:
-                description: 'Also build xserver-xis-core (XiS) in the beta channel'
-                type: boolean
-                default: false
-            xis_ref:
-                description: 'XiS branch, tag or sha (default: XIS_REF in xlibre/versions.sh)'
-                required: false
             revision:
-                description: 'XiS release revision (1, 2, ...); empty = git snapshot'
+                description: 'XiS release revision (1, 2, ...); empty = 1'
                 required: false
             only:
                 description: 'Only these sources (space separated names from sources.txt, or xserver-xis-core); empty = all'
@@ -57,8 +51,6 @@ jobs:
                 shell: bash
         env:
             CHANNEL: ${{ matrix.channel }}
-            BUILD_XIS: ${{ inputs.build_xis && 'yes' || 'no' }}
-            XIS_REF: ${{ inputs.xis_ref }}
             XIS_REVISION: ${{ inputs.revision }}
             ONLY: ${{ inputs.only }}
         steps:

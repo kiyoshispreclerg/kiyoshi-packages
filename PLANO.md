@@ -120,35 +120,36 @@ nova do upstream.
 
 ### 0.4 XiS (`xserver-xis-core`)
 
-> **Desligado por enquanto**: o fork ainda precisa de ajustes para ser
-> compatível com a 25.2. O workflow **XLibre** só o compila com o campo
-> `build_xis` marcado (padrão: desmarcado), e o `test-install.sh` só testa a
-> troca se o `.deb` existir. Os READMEs têm a seção dele comentada.
+Sai do mesmo workflow **XLibre**, nos dois canais, sem nenhum campo para ligar:
+o empacotamento do canal (`xlibre-server-stable` ou `xlibre-server`) com a árvore
+do `kiyoshispreclerg/xserver`, trocado o nome do pacote. O código vem da **tag
+equivalente** à do XLibre no canal: se o workflow resolveu `xlibre-xserver-25.1.10`
+na stable, o XiS usa `xis-xserver-25.1.10` (branch `test-xis-release-25.1`); na
+beta, `xlibre-xserver-25.2.3` -> `xis-xserver-25.2.3` (`test-xis-release-25.2`).
+Se o fork ainda não tem a tag, o XiS é pulado nesse canal com um aviso
+(`::warning::`), e o resto segue.
 
-Sai do mesmo workflow **XLibre**, no canal `beta`: o empacotamento da beta com
-a árvore do `kiyoshispreclerg/xserver`, trocado o nome do pacote. Entradas:
+Entradas:
 
-* `xis_ref`: o ideal é uma **tag** do seu `xserver`, criada na branch de release
-  a partir da mesma tag 25.2 que a beta usa, mais as suas mudanças (por exemplo
-  `xis-25.2.2-1`). Aceita também ramo, sha ou `latest:<regex>` (vazio =
-  `experiments`);
-* `revision`: o número N do XiS sobre a **mesma versão do upstream**. A versão
-  sai `2:<upstream>-<rev. do empacotamento>xis<N>~alvo`, por exemplo
-  `2:25.2.2-1xis2~ubuntu22.04`: fica acima do `xserver-xlibre-core` de mesma
-  versão (`2:25.2.2-1~...`), cresce a cada N, e uma 25.2.3 do upstream fica acima de
-  todas. Vazio gera um **snapshot** (`...-1xis0~git<sha>~alvo`), que perde para
-  qualquer N >= 1. A versão do upstream é a do `meson.build` da árvore do XiS,
-  então a tag do fork precisa continuar dizendo `25.2.2`;
+* `revision`: o número N do XiS sobre a **mesma versão do upstream** (vazio = 1).
+  A versão sai `2:<upstream>-<rev. do empacotamento>xis<N>~alvo`, por exemplo
+  `2:25.1.10-1xis2~ubuntu22.04`: fica acima do `xserver-xlibre-core` de mesma
+  versão, cresce a cada N, e uma versão nova do upstream fica acima de todas. A
+  versão do upstream é a do `meson.build` da árvore do XiS, então a tag do fork
+  precisa dizer a mesma versão da tag do XLibre;
 * `only`: `xserver-xis-core` compila só o XiS (e o `xorgproto` de que ele precisa),
-  sem o teste de instalação; ideal para atualizar o XiS sem refazer o XLibre
-  inteiro. Com `release` marcado, só o XiS é anexado ao pool.
+  sem o teste de instalação, nos dois canais. Com `release` marcado, só o XiS é
+  anexado ao pool.
 
-O upstream não é recompilado nesse caso: o XiS se atualiza na mesma versão do
-upstream, quantas vezes você quiser, só incrementando `revision`.
+Receita para publicar uma versão do XiS: crie a tag `xis-xserver-X.Y.Z` na branch
+de release do fork e dê push; rode **XLibre** (a versão sai da última tag
+`xlibre-xserver-*` de cada canal). Para refazer só o XiS na mesma versão, use
+`only` = `xserver-xis-core` e `revision` = próximo número.
 
-Receita para publicar uma versão do XiS: crie a tag no `xserver` e dê push, rode
-**XLibre** com `xis_ref` = a tag, `revision` = próximo número, `only` =
-`xserver-xis-core`, `build_xis` e `release` marcado.
+Os backports são por diretório em `xlibre/patches/`: `stable` (servidor XLibre),
+`xis-stable` (XiS da stable; só o do libdrm, o do meson já está no fork) e
+`xis-beta` (inexistente: a beta não precisa). Um patch que deixa de aplicar para
+o build, então apague-o do diretório quando o fork ou o upstream o absorver.
 
 ### 0.5 Retirar uma versão
 

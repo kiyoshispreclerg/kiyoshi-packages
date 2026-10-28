@@ -4,16 +4,16 @@
 # stable, beta: xlibre-server from the official X11Libre/xserver tag (STABLE_REF,
 #         BETA_REF in versions.sh: the newest 25.1.x / 25.2.x tag) inside the
 #         vendored debian/ (xlibre/packaging/xlibre-server[-stable]). All its binary packages are published.
-# xis:    xserver-xis-core, the XiS fork (25.2 based) as a drop-in for the beta
-#         xserver-xlibre-core: the same packaging with the XiS tree and the core
-#         package renamed. It Provides/Conflicts/Replaces xserver-xlibre-core, so
+# xis:    xserver-xis-core, the XiS fork as a drop-in for xserver-xlibre-core of
+#         $CHANNEL: the same packaging as that channel's server with the XiS tree
+#         (tag xis-xserver-X.Y.Z of the fork, for the XLibre tag xlibre-xserver-X.Y.Z
+#         of the channel) and the core package renamed. It Provides/Conflicts/Replaces xserver-xlibre-core, so
 #         the user installs one or the other and the rest of XLibre (drivers,
 #         xserver-xlibre, ...) is satisfied by either. The other binary packages
 #         are built too (dh_missing requires it) but discarded; only
 #         xserver-xis-core_*.deb is kept.
 #
-# Environment (xis): XIS_URL, XIS_REF (versions.sh), XIS_REVISION (release
-# number; empty = snapshot with the git hash in the version).
+# Environment (xis): XIS_URL (versions.sh), XIS_REVISION (release number, default 1).
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 mode="${1:?usage: build-server.sh stable|beta|xis}"
 src="$WORK/src/xlibre-server-$mode"
@@ -35,14 +35,23 @@ stable|beta)
     profiles=""
     ;;
 xis)
-    [ "$CHANNEL" = beta ] || die "XiS only in the beta channel"
-    dest="$OUT/beta/xserver-xis-core"
-    use_packaging xlibre-server "$src"
-    xref="$(git_fetch "$tree" "$XIS_URL" "$XIS_REF")"
+    if [ "$CHANNEL" = stable ]; then uref="$STABLE_REF"; pkg=xlibre-server-stable; else uref="$BETA_REF"; pkg=xlibre-server; fi
+    dest="$OUT/$CHANNEL/xserver-xis-core"
+    # the XLibre tag of this channel, and the same version in the fork
+    xltag="$(resolve_ref "$SERVER_URL" "$uref")"
+    xref="xis-${xltag#xlibre-}"
+    if [ -z "$(git ls-remote --tags --refs "$XIS_URL" "$xref")" ]; then
+        echo "::warning::no tag $xref in $XIS_URL: xserver-xis-core skipped ($CHANNEL)"
+        exit 0
+    fi
+    use_packaging "$pkg" "$src"
+    git_fetch "$tree" "$XIS_URL" "$xref" >/dev/null
     sha="$(git -C "$tree" rev-parse --short=7 HEAD)"
-    step "xserver-xis-core = vendored xlibre-server + XiS $xref ($XIS_URL)"
-    echo "xserver-xis-core packaging=vendored:xlibre-server code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
+    step "xserver-xis-core ($CHANNEL) = vendored $pkg + XiS $xref ($XIS_URL)"
+    echo "xserver-xis-core($CHANNEL) packaging=vendored:$pkg code=$XIS_URL@$xref($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
+    # backports the fork's tag still lacks: xlibre/patches/xis-<channel> (none for beta)
+    apply_patches "$src" "xis-$CHANNEL"
 
     # Rename the core package (not the udeb) in file names and contents.
     ( cd "$src/debian" || exit
@@ -61,14 +70,14 @@ xis)
 
     # Version: 2:<upstream>-<packaging rev>xis<N>~<target>, e.g. 2:25.2.2-1xis2~jammy.
     # Same upstream version and Debian revision as xserver-xlibre-core, plus the
-    # XiS revision N: it sorts above the upstream package of that version, rises
-    # with every N, and any later upstream version (25.2.3) is above all of them.
-    # A snapshot (no XIS_REVISION) is N=0 with the git hash.
+    # XiS revision N (XIS_REVISION, default 1): it sorts above the upstream package
+    # of that version, rises with every N, and any later upstream version (25.2.3)
+    # is above all of them.
     up="$(tree_version "$src")"
     [ -n "$up" ] || die "cannot read the version from the XiS meson.build"
     cur="$(dpkg-parsechangelog -l "$src/debian/changelog" -S Version)"
     prel="${cur##*-}"; prel="${prel%%[!0-9]*}"; prel="${prel:-1}"
-    if [ -n "${XIS_REVISION:-}" ]; then rev="${prel}xis${XIS_REVISION}"; else rev="${prel}xis0~git${sha}"; fi
+    rev="${prel}xis${XIS_REVISION:-1}"
     ( cd "$src" && dch -b -v "2:${up}-${rev}~${TARGET}" -D unstable --force-distribution \
         "XiS ${xref} (${sha}) as xserver-xis-core" )
     profiles="noudeb"

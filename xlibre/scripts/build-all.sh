@@ -1,13 +1,13 @@
 #!/bin/bash
 # Build, for this container's target and $CHANNEL (stable|beta): every source in
-# sources.txt, then (beta only) xserver-xis-core. A source marked `required = no`
+# sources.txt, then xserver-xis-core (XiS) for the same channel. A source marked `required = no`
 # that fails is reported at the end and does not stop the others.
 here="$(dirname "${BASH_SOURCE[0]}")"
 . "$here/lib.sh"
 mkdir -p "$OUT"; : > "$WORK/BUILD-INFO"
 failed=()
 # XiS alone still needs the x11proto-dev built from xorgproto
-if [ "${BUILD_XIS:-no}" = yes ] && [ -n "${ONLY:-}" ] && [ "$CHANNEL" = beta ] && [[ " $ONLY " == *" xserver-xis-core "* ]]; then
+if [ -n "${ONLY:-}" ] && [[ " $ONLY " == *" xserver-xis-core "* ]]; then
     ONLY="$ONLY xorgproto"
 fi
 wanted() { [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]; }
@@ -27,9 +27,9 @@ while read -r name repo uref required; do
     fi
 done < "$XLIBRE_DIR/sources.txt"
 
-# XiS is off until the fork is compatible with the 25.2 release; BUILD_XIS=yes
-# (workflow input build_xis) turns it on.
-if [ "${BUILD_XIS:-no}" = yes ] && [ "$CHANNEL" = beta ] && wanted xserver-xis-core; then
+# XiS: the fork's tag that matches this channel's XLibre tag (skipped with a
+# warning if the fork has none yet)
+if wanted xserver-xis-core; then
     "$here/build-server.sh" xis
 fi
 

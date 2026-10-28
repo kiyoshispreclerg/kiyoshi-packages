@@ -61,19 +61,18 @@ mais um `x11proto-dev` mais novo.
 
 Ative **um só** entre `stable` e `beta`, não os dois.
 
-<!-- XiS desligado por enquanto (workflow XLibre: build_xis)
 ### xserver-xis-core
 
-O `xserver-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi, baseado no
-25.2) como substituto direto do `xserver-xlibre-core` da beta. Ele fornece,
+O `xserver-xis-core` é o servidor XiS (o fork do XLibre do Kiyoshi) como substituto
+direto do `xserver-xlibre-core`, tanto na `stable` (baseada no XLibre 25.1)
+quanto na `beta` (25.2). Ele fornece,
 conflita e substitui esse pacote: você instala o que preferir e o resto
 (drivers, `xserver-xlibre`) continua funcionando com qualquer um:
 
 ```sh
-sudo apt install xserver-xlibre-core    # XLibre beta
+sudo apt install xserver-xlibre-core    # XLibre
 sudo apt install xserver-xis-core        # XiS: substitui o xserver-xlibre-core
 ```
--->
 
 ## Programas
 

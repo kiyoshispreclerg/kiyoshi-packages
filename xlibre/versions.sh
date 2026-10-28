@@ -22,9 +22,9 @@ STABLE_REF="${STABLE_REF:-latest:xlibre-xserver-25\.1\.[0-9]+}"
 STABLE_PACKAGING_REF=2eefc79ccda036c06ab717d1302bc179f695d1e7   # debian/ at 2:25.1.7-1
 
 # ---- XiS -----------------------------------------------------------------------
-# The Kiyoshi fork of XLibre (25.2 based), packaged as xserver-xis-core: a drop-in
-# alternative to the beta xserver-xlibre-core. Built from a tag of the fork's
-# release branch, taken from the same 25.2 tag as the beta plus the XiS changes.
-# XIS_REF: a tag, a branch, a sha, or latest:<regex> (e.g. latest:xis-25\.2\..*).
+# The Kiyoshi fork of XLibre, packaged as xserver-xis-core: a drop-in alternative
+# to xserver-xlibre-core in both channels. It is built from the fork's tag that
+# matches the XLibre tag of the channel: xlibre-xserver-25.1.10 -> xis-xserver-25.1.10
+# (test-xis-release-25.1 for stable, test-xis-release-25.2 for beta). If the fork
+# has no such tag yet, XiS is skipped for that channel with a warning.
 XIS_URL="${XIS_URL:-https://github.com/kiyoshispreclerg/xserver.git}"
-XIS_REF="${XIS_REF:-experiments}"

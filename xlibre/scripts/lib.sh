@@ -76,6 +76,43 @@ resolve_ref() {
     esac
 }
 
+# core_input KIND FIELD: the commit / revision typed in the workflow for the
+# core server of this $CHANNEL. KIND = xlibre|xis, FIELD = COMMIT|REV.
+# (stable = 25.1, beta = 25.2; env XLIBRE_STABLE_COMMIT, XIS_BETA_REV, ...)
+core_input() { local v="${1^^}_${CHANNEL^^}_$2"; echo "${!v:-}"; }
+
+# check_commit KIND: if a commit was given for the core KIND (xlibre|xis) of this
+# $CHANNEL, require a full SHA, a revision >= 2 (1 is the build of the tag
+# itself) and that the commit is the tag's commit or a descendant of it: the
+# newest release tag of the channel (in X11Libre/xserver for xlibre, in the
+# fork for xis). A revision without a commit is an error. Dies on failure.
+check_commit() {
+    local kind="$1" commit rev what uref url base d bsha
+    commit="$(core_input "$kind" COMMIT)"; rev="$(core_input "$kind" REV)"
+    what="$kind $([ "$CHANNEL" = stable ] && echo 25.1 || echo 25.2)"
+    if [ -z "$commit" ]; then
+        [ -z "$rev" ] || die "$what: revision $rev given without a commit"
+        return 0
+    fi
+    [[ $commit =~ ^[0-9a-f]{40}$ ]] || die "$what: the commit must be the full 40-character SHA, in lowercase"
+    { [[ $rev =~ ^[0-9]+$ ]] && [ "$rev" -ge 2 ]; } || die "$what: the revision must be a number >= 2 (1 is the tag's own build)"
+    if [ "$CHANNEL" = stable ]; then uref="$STABLE_REF"; else uref="$BETA_REF"; fi
+    base="$(resolve_ref "$SERVER_URL" "$uref")"
+    if [ "$kind" = xis ]; then url="$XIS_URL"; base="xis-${base#xlibre-}"; else url="$SERVER_URL"; fi
+    [ -n "$(git ls-remote --tags --refs "$url" "$base")" ] || die "$what: no tag $base in $url"
+    d="$(mktemp -d)"
+    git init -q "$d"; git -C "$d" remote add origin "$url"
+    # history only (no file contents): enough to compare ancestry
+    git -C "$d" fetch -q --filter=blob:none --no-tags origin "+refs/tags/$base:refs/tags/$base" "$commit" ||
+        { rm -rf "$d"; die "$what: cannot fetch $commit from $url"; }
+    bsha="$(git -C "$d" rev-parse "refs/tags/$base^{commit}")"
+    if ! git -C "$d" merge-base --is-ancestor "$bsha" "$commit"; then
+        rm -rf "$d"; die "$what: $commit is not a descendant of $base ($bsha)"
+    fi
+    rm -rf "$d"
+    echo "$what: $commit descends from $base ($bsha); revision $rev"
+}
+
 # git_fetch DIR URL REF: shallow checkout of REF (branch, tag, sha, latest:<regex>)
 # into DIR. Prints the resolved ref on stdout.
 git_fetch() {
@@ -92,11 +129,13 @@ git_fetch() {
 # swap_version DIR UPSTREAM_VERSION: add a changelog entry for a tree whose
 # upstream version may differ from the one the packaging was written for. The
 # packaging's own revision (-1+xlibre1, ...) is kept when the version is the same.
+# A 4th argument is the Debian revision to use instead (a build of a given commit).
 swap_version() {
     local dir="$1" up="$2" cur ep="" rest new
     cur="$(dpkg-parsechangelog -l "$dir/debian/changelog" -S Version)"
     case "$cur" in *:*) ep="${cur%%:*}:"; rest="${cur#*:}" ;; *) rest="$cur" ;; esac
-    if [ "${rest%-*}" = "$up" ]; then new="${cur}~${TARGET}"; else new="${ep}${up}-1~${TARGET}"; fi
+    if [ -n "${4:-}" ]; then new="${ep}${up}-$4~${TARGET}"
+    elif [ "${rest%-*}" = "$up" ]; then new="${cur}~${TARGET}"; else new="${ep}${up}-1~${TARGET}"; fi
     ( cd "$dir" && dch -b -v "$new" -D unstable --force-distribution "${3:-Upstream $up} for ${TARGET}" )
 }
 

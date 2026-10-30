@@ -14,6 +14,12 @@
 #         xserver-xis-core_*.deb is kept.
 #
 # Environment (xis): XIS_URL (versions.sh), XIS_REVISION (release number, default 1).
+#
+# A commit typed for the core of this channel (XLIBRE_<CHANNEL>_COMMIT /
+# XIS_<CHANNEL>_COMMIT, with _REV; see core_input in lib.sh) is built instead of
+# the tag: version 2:<meson version>-<rev>~<target> for xlibre, and
+# 2:<meson version>-<packaging rev>xis<rev>~<target> for xis. The workflow's plan
+# job has already checked that the commit descends from the tag (check_commit).
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 mode="${1:?usage: build-server.sh stable|beta|xis}"
 src="$WORK/src/xlibre-server-$mode"
@@ -26,12 +32,19 @@ stable|beta)
     if [ "$mode" = stable ]; then uref="$STABLE_REF"; pkg=xlibre-server-stable; else uref="$BETA_REF"; pkg=xlibre-server; fi
     dest="$OUT/$mode/xlibre-server"
     use_packaging "$pkg" "$src"
-    tag="$(git_fetch "$tree" "$SERVER_URL" "$uref")"
+    commit="$(core_input xlibre COMMIT)"
+    tag="$(git_fetch "$tree" "$SERVER_URL" "${commit:-$uref}")"
     step "xlibre-server ($mode) = vendored $pkg + $tag"
     echo "xlibre-server($mode) packaging=vendored:$pkg code=xserver@$tag($(git -C "$tree" rev-parse HEAD))" >> "$WORK/BUILD-INFO"
     swap_tree "$src" "$tree"
     apply_patches "$src" "$mode"
-    swap_version "$src" "${tag##*-}" "XLibre $tag"
+    if [ -n "$commit" ]; then
+        up="$(tree_version "$src")"
+        [ -n "$up" ] || die "cannot read the version from the XLibre meson.build"
+        swap_version "$src" "$up" "XLibre commit $commit" "$(core_input xlibre REV)"
+    else
+        swap_version "$src" "${tag##*-}" "XLibre $tag"
+    fi
     profiles=""
     ;;
 xis)
@@ -40,7 +53,9 @@ xis)
     # the XLibre tag of this channel, and the same version in the fork
     xltag="$(resolve_ref "$SERVER_URL" "$uref")"
     xref="xis-${xltag#xlibre-}"
-    if [ -z "$(git ls-remote --tags --refs "$XIS_URL" "$xref")" ]; then
+    commit="$(core_input xis COMMIT)"; xrev="${XIS_REVISION:-1}"
+    if [ -n "$commit" ]; then xref="$commit"; xrev="$(core_input xis REV)"; fi
+    if [ -z "$commit" ] && [ -z "$(git ls-remote --tags --refs "$XIS_URL" "$xref")" ]; then
         echo "::warning::no tag $xref in $XIS_URL: xserver-xis-core skipped ($CHANNEL)"
         exit 0
     fi
@@ -77,7 +92,7 @@ xis)
     [ -n "$up" ] || die "cannot read the version from the XiS meson.build"
     cur="$(dpkg-parsechangelog -l "$src/debian/changelog" -S Version)"
     prel="${cur##*-}"; prel="${prel%%[!0-9]*}"; prel="${prel:-1}"
-    rev="${prel}xis${XIS_REVISION:-1}"
+    rev="${prel}xis${xrev}"
     ( cd "$src" && dch -b -v "2:${up}-${rev}~${TARGET}" -D unstable --force-distribution \
         "XiS ${xref} (${sha}) as xserver-xis-core" )
     profiles="noudeb"

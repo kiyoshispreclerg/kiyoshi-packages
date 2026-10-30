@@ -10,7 +10,22 @@ failed=()
 if [ -n "${ONLY:-}" ] && [[ " $ONLY " == *" xserver-xis-core "* ]]; then
     ONLY="$ONLY xorgproto"
 fi
-wanted() { [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]; }
+# A commit typed for a core of this channel: build only that core (the other
+# packages of the channel were built by the run of its tag). The workflow does
+# not start this channel at all when it has no commit.
+xl_commit="$(core_input xlibre COMMIT)"; xis_commit="$(core_input xis COMMIT)"
+wanted() {
+    if [ -n "$xl_commit$xis_commit" ]; then
+        case "$1" in
+        xorgproto)        return 0 ;;   # build dependency
+        xlibre-server)    [ -n "$xl_commit" ] ;;
+        xserver-xis-core) [ -n "$xis_commit" ] ;;
+        *)                return 1 ;;
+        esac
+    else
+        [ -z "${ONLY:-}" ] || [[ " $ONLY " == *" $1 "* ]]
+    fi
+}
 
 while read -r name repo uref required; do
     case "$name" in ''|'#'*) continue ;; esac

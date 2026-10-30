@@ -146,6 +146,24 @@ de release do fork e dê push; rode **XLibre** (a versão sai da última tag
 `xlibre-xserver-*` de cada canal). Para refazer só o XiS na mesma versão, use
 `only` = `xserver-xis-core` e `revision` = próximo número.
 
+Para um **pequeno update na mesma versão** (ex.: XiS 25.1.10-2), sem refazer tudo,
+há 8 campos: `xlibre_25_1_commit`/`_rev`, `xlibre_25_2_commit`/`_rev`,
+`xis_25_1_commit`/`_rev` e `xis_25_2_commit`/`_rev`. Sem nenhum preenchido, o
+workflow é o de sempre (tag mais nova de cada canal, tudo). Com um commit:
+
+* o job `plan` valida antes do build (falha em segundos): SHA completo em
+  minúsculas, revisão numérica >= 2 (1 é o build da própria tag; revisão sem
+  commit é erro) e **o commit é o da tag mais nova do canal ou descendente dela**
+  (`git merge-base --is-ancestor`; para o xlibre a tag é `xlibre-xserver-*` do
+  X11Libre/xserver, para o XiS é a `xis-xserver-*` do fork). Não combina com `only`;
+* só os canais com commit rodam, e neles só o núcleo pedido (mais o `xorgproto`,
+  dependência de build, que nunca vai ao pool nesse modo). Para o xlibre saem todos
+  os binários da fonte `xlibre-server` (core, xvfb, xnest, dev...); para o XiS, só
+  o `xserver-xis-core`. Sem teste de instalação (o conjunto é parcial);
+* versões: xlibre `2:<meson.build>-<rev>~alvo` (25.1.10-2), XiS
+  `2:<meson.build>-<rev. empacotamento>xis<rev>~alvo`. Pressupõe que a rodada sem
+  commits já compilou drivers e demais pacotes da mesma versão-base.
+
 Os backports são por diretório em `xlibre/patches/`: `stable` (servidor XLibre),
 `xis-stable` (XiS da stable; só o do libdrm, o do meson já está no fork) e
 `xis-beta` (inexistente: a beta não precisa). Um patch que deixa de aplicar para

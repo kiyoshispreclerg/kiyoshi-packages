@@ -6,14 +6,44 @@ name: XLibre
 
 # Manual only: it takes hours, so it runs when you start it (Actions > XLibre >
 # Run workflow), e.g. when a new upstream tag appears.
+#
+# With no commit typed it builds everything from the newest release tag of each
+# channel. Typing a commit (and its revision) for a core server builds only that
+# core from the commit, e.g. xis 25.1.10-2: the commit must be the release tag's
+# commit or a descendant of it (checked first, by the `plan` job), and the other
+# packages are not rebuilt (run once without commits before).
 on:
     workflow_dispatch:
         inputs:
             revision:
-                description: 'XiS release revision (1, 2, ...); empty = 1'
+                description: 'XiS release revision of the full build (1, 2, ...); empty = 1'
+                required: false
+            xlibre_25_1_commit:
+                description: 'xserver-xlibre-core 25.1: full SHA to build instead of the tag (only the core is built)'
+                required: false
+            xlibre_25_1_rev:
+                description: 'xserver-xlibre-core 25.1: revision of that commit (2 gives 25.1.10-2); required with a commit'
+                required: false
+            xlibre_25_2_commit:
+                description: 'xserver-xlibre-core 25.2: full SHA to build instead of the tag (only the core is built)'
+                required: false
+            xlibre_25_2_rev:
+                description: 'xserver-xlibre-core 25.2: revision of that commit (2 gives 25.2.3-2); required with a commit'
+                required: false
+            xis_25_1_commit:
+                description: 'xserver-xis-core 25.1: full SHA of the fork to build instead of the tag (only the core is built)'
+                required: false
+            xis_25_1_rev:
+                description: 'xserver-xis-core 25.1: XiS revision of that commit (2 gives 25.1.10-1xis2); required with a commit'
+                required: false
+            xis_25_2_commit:
+                description: 'xserver-xis-core 25.2: full SHA of the fork to build instead of the tag (only the core is built)'
+                required: false
+            xis_25_2_rev:
+                description: 'xserver-xis-core 25.2: XiS revision of that commit (2 gives 25.2.3-1xis2); required with a commit'
                 required: false
             only:
-                description: 'Only these sources (space separated names from sources.txt, or xserver-xis-core); empty = all'
+                description: 'Only these sources (space separated names from sources.txt, or xserver-xis-core); empty = all; not with commits'
                 required: false
             release:
                 description: 'Add the result to the apt repository'
@@ -28,24 +58,42 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    plan:
+        name: check the inputs
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        defaults:
+            run:
+                shell: bash
+        env:
+            ONLY: ${{ inputs.only }}
+            XLIBRE_STABLE_COMMIT: ${{ inputs.xlibre_25_1_commit }}
+            XLIBRE_STABLE_REV: ${{ inputs.xlibre_25_1_rev }}
+            XLIBRE_BETA_COMMIT: ${{ inputs.xlibre_25_2_commit }}
+            XLIBRE_BETA_REV: ${{ inputs.xlibre_25_2_rev }}
+            XIS_STABLE_COMMIT: ${{ inputs.xis_25_1_commit }}
+            XIS_STABLE_REV: ${{ inputs.xis_25_1_rev }}
+            XIS_BETA_COMMIT: ${{ inputs.xis_25_2_commit }}
+            XIS_BETA_REV: ${{ inputs.xis_25_2_rev }}
+        outputs:
+            commit: ${{ steps.plan.outputs.commit }}
+            matrix: ${{ steps.plan.outputs.matrix }}
+        steps:
+            - uses: actions/checkout@v4
+            - id: plan
+              run: xlibre/scripts/plan.sh
+
     build:
         name: ${{ matrix.channel }} ${{ matrix.name }}
+        needs: plan
         runs-on: ubuntu-24.04
         timeout-minutes: 150
         container:
             image: ${{ matrix.image }}
         strategy:
             fail-fast: false
-            matrix:
-                include:
-                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: stable }
-                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: stable }
-                    - { name: debian-12,    image: "debian:12",    channel: stable }
-                    - { name: debian-13,    image: "debian:13",    channel: stable }
-                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: beta }
-                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: beta }
-                    - { name: debian-12,    image: "debian:12",    channel: beta }
-                    - { name: debian-13,    image: "debian:13",    channel: beta }
+            # from the plan job: all 8, or only the channels that have a commit
+            matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
         defaults:
             run:
                 shell: bash
@@ -53,6 +101,14 @@ jobs:
             CHANNEL: ${{ matrix.channel }}
             XIS_REVISION: ${{ inputs.revision }}
             ONLY: ${{ inputs.only }}
+            XLIBRE_STABLE_COMMIT: ${{ inputs.xlibre_25_1_commit }}
+            XLIBRE_STABLE_REV: ${{ inputs.xlibre_25_1_rev }}
+            XLIBRE_BETA_COMMIT: ${{ inputs.xlibre_25_2_commit }}
+            XLIBRE_BETA_REV: ${{ inputs.xlibre_25_2_rev }}
+            XIS_STABLE_COMMIT: ${{ inputs.xis_25_1_commit }}
+            XIS_STABLE_REV: ${{ inputs.xis_25_1_rev }}
+            XIS_BETA_COMMIT: ${{ inputs.xis_25_2_commit }}
+            XIS_BETA_REV: ${{ inputs.xis_25_2_rev }}
         steps:
             - name: git and certificates (so checkout does a real clone)
               run: |
@@ -93,24 +149,17 @@ jobs:
 
     install-test:
         name: install ${{ matrix.channel }} ${{ matrix.name }}
-        needs: build
-        if: ${{ inputs.only == '' }}   # a partial build has nothing complete to test
+        needs: [plan, build]
+        # a partial build (only, or commits) has nothing complete to test
+        if: ${{ inputs.only == '' && needs.plan.outputs.commit != 'true' }}
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         container:
             image: ${{ matrix.image }}
         strategy:
             fail-fast: false
-            matrix:
-                include:
-                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: stable }
-                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: stable }
-                    - { name: debian-12,    image: "debian:12",    channel: stable }
-                    - { name: debian-13,    image: "debian:13",    channel: stable }
-                    - { name: ubuntu-22.04, image: "ubuntu:22.04", channel: beta }
-                    - { name: ubuntu-24.04, image: "ubuntu:24.04", channel: beta }
-                    - { name: debian-12,    image: "debian:12",    channel: beta }
-                    - { name: debian-13,    image: "debian:13",    channel: beta }
+            # from the plan job: all 8, or only the channels that have a commit
+            matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
         defaults:
             run:
                 shell: bash
@@ -134,7 +183,7 @@ jobs:
 
     release:
         name: add to the apt repository
-        needs: [build, install-test]
+        needs: [plan, build, install-test]
         if: ${{ !cancelled() && !failure() && github.event_name == 'workflow_dispatch' && inputs.release }}
         runs-on: ubuntu-24.04
         timeout-minutes: 15
@@ -145,7 +194,7 @@ jobs:
             cancel-in-progress: false
         env:
             GH_TOKEN: ${{ github.token }}
-            ONLY: ${{ inputs.only }}
+            PARTIAL: ${{ inputs.only != '' || needs.plan.outputs.commit == 'true' }}
         steps:
             - uses: actions/download-artifact@v4
               with:
@@ -165,8 +214,8 @@ jobs:
                           [ -d "$comp" ] || continue
                           comp="$(basename "$comp")"
                           [ "$comp" = main ] && [ "$channel" != beta ] && continue
-                          # a partial run (only=...) must not replace the shared xorgproto
-                          [ "$comp" = main ] && [ -n "$ONLY" ] && continue
+                          # a partial run (only, commits) must not replace the shared xorgproto
+                          [ "$comp" = main ] && [ "$PARTIAL" = true ] && continue
                           for f in "$d/$comp"/*.deb; do
                               if [ "$comp" = main ]; then n="$(basename "$f")"; else n="$comp--$(basename "$f")"; fi
                               cp "$f" "pool/$n"

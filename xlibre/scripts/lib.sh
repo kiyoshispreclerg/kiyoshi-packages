@@ -16,7 +16,7 @@ MAINTAINER="${MAINTAINER:-Kiyoshi Spreclerg <kiyoshi_pip@protonmail.com>}"
 VCS_URL="${VCS_URL:-https://github.com/kiyoshispreclerg/kiyoshi-packages}"
 export DEBEMAIL="${DEBEMAIL:-kiyoshi_pip@protonmail.com}" DEBFULLNAME="${DEBFULLNAME:-Kiyoshi Spreclerg}"
 
-# TARGET: ubuntu22.04 | ubuntu24.04 | debian12 | debian13 (the tag put in versions)
+# TARGET: ubuntu22.04 | ubuntu24.04 | ubuntu26.04 | debian12 | debian13 (the tag put in versions)
 . /etc/os-release
 TARGET="${TARGET:-${ID}${VERSION_ID}}"
 

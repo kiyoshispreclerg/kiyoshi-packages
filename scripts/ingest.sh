@@ -4,7 +4,7 @@
 # Needs: gh (authenticated, GH_TOKEN), yq, jq, dpkg-deb. Run from the repo root.
 #
 # The target (suite) of a .deb comes from its version when it carries a tag
-# (~ubuntu22.04, ~ubuntu24.04, ~debian12, ~debian13). If it doesn't, it is read
+# (~ubuntu22.04, ~ubuntu24.04, ~ubuntu26.04, ~debian12, ~debian13). If it doesn't, it is read
 # from the file name the project gave it (ubuntu22.04, ubuntu-24.04, debian-12,
 # debian13-devuan-..., etc.) and the tag is added to the version here, so the
 # four builds of a release have different names. Anything else is skipped.
@@ -21,6 +21,7 @@ target_of_filename() {
     case "$1" in
         *ubuntu-22.04*|*ubuntu22.04*) echo ubuntu22.04 ;;
         *ubuntu-24.04*|*ubuntu24.04*) echo ubuntu24.04 ;;
+        *ubuntu-26.04*|*ubuntu26.04*) echo ubuntu26.04 ;;
         # Devuan builds are made in the Debian image (daedalus = bookworm,
         # excalibur = trixie): same package, same suite.
         *debian-12*|*debian12*|*devuan-daedalus*)  echo debian12 ;;

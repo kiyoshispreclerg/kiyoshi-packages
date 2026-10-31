@@ -20,6 +20,15 @@ SignWith: @KEYID@
 
 Origin: kiyoshi-packages
 Label: kiyoshi-packages
+Codename: resolute
+Suite: resolute
+Architectures: amd64
+Components: main stable beta
+Description: Pacotes do Kiyoshi para Ubuntu 26.04
+SignWith: @KEYID@
+
+Origin: kiyoshi-packages
+Label: kiyoshi-packages
 Codename: bookworm
 Suite: bookworm
 Architectures: amd64

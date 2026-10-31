@@ -18,8 +18,13 @@ jobs:
                 include:
                     - { image: 'ubuntu:22.04', suite: jammy }
                     - { image: 'ubuntu:24.04', suite: noble }
+                    - { image: 'ubuntu:26.04', suite: resolute }
                     - { image: 'debian:12', suite: bookworm }
                     - { image: 'debian:13', suite: trixie }
+                    # derivatives: the suite is the one of the base (UBUNTU_CODENAME / debian_version)
+                    - { image: 'linuxmintd/mint21-amd64', suite: jammy }
+                    - { image: 'linuxmintd/mint22-amd64', suite: noble }
+                    - { image: 'linuxmintd/lmde7-amd64', suite: trixie }
         container: ${{ matrix.image }}
         env:
             DEBIAN_FRONTEND: noninteractive

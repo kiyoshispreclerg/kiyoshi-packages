@@ -6,7 +6,8 @@ ver="$(dpkg-deb -f "$1" Version)"
 case "$ver" in
     *~ubuntu22.04*) echo jammy ;;
     *~ubuntu24.04*) echo noble ;;
+    *~ubuntu26.04*) echo resolute ;;
     *~debian12*)    echo bookworm ;;
     *~debian13*)    echo trixie ;;
-    *) echo "suite-of: $1: version '$ver' has no ~ubuntu22.04/~ubuntu24.04/~debian12/~debian13 tag" >&2; exit 1 ;;
+    *) echo "suite-of: $1: version '$ver' has no ~ubuntu22.04/~ubuntu24.04/~ubuntu26.04/~debian12/~debian13 tag" >&2; exit 1 ;;
 esac

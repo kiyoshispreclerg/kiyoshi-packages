@@ -26,7 +26,7 @@ else
     commit=false
     chs='["stable","beta"]'
 fi
-targets='[["ubuntu-22.04","ubuntu:22.04"],["ubuntu-24.04","ubuntu:24.04"],["debian-12","debian:12"],["debian-13","debian:13"]]'
+targets='[["ubuntu-22.04","ubuntu:22.04"],["ubuntu-24.04","ubuntu:24.04"],["ubuntu-26.04","ubuntu:26.04"],["debian-12","debian:12"],["debian-13","debian:13"]]'
 matrix="$(jq -nc --argjson t "$targets" --argjson c "$chs" \
     '{include: [$c[] as $ch | $t[] | {name: .[0], image: .[1], channel: $ch}]}')"
 echo "commit=$commit"; echo "matrix=$matrix"

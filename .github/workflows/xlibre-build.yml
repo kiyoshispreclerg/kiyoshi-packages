@@ -92,7 +92,7 @@ jobs:
             image: ${{ matrix.image }}
         strategy:
             fail-fast: false
-            # from the plan job: all 8, or only the channels that have a commit
+            # from the plan job: all 10, or only the channels that have a commit
             matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
         defaults:
             run:
@@ -158,7 +158,7 @@ jobs:
             image: ${{ matrix.image }}
         strategy:
             fail-fast: false
-            # from the plan job: all 8, or only the channels that have a commit
+            # from the plan job: all 10, or only the channels that have a commit
             matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
         defaults:
             run:

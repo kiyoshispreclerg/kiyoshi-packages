@@ -12,6 +12,7 @@ compilado no GitHub para cada alvo, assinado e servido pelo GitHub Pages.
 |---|---|
 | Ubuntu 22.04 | `jammy` |
 | Ubuntu 24.04 | `noble` |
+| Ubuntu 26.04 | `resolute` |
 | Debian 12 | `bookworm` |
 | Debian 13 | `trixie` |
 
@@ -24,7 +25,7 @@ Arquitetura: `amd64`.
 
 Baixe o [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages-repo_all.deb)
 e instale (duplo clique, ou `sudo apt install ./kiyoshi-packages-repo_all.deb`).
-Ele instala a chave e grava a fonte do apt do seu sistema (Ubuntu 22.04/24.04,
+Ele instala a chave e grava a fonte do apt do seu sistema (Ubuntu 22.04/24.04/26.04,
 Debian 12/13, Devuan 5/6); depois, `sudo apt update`. Ele pergunta qual canal do
 XLibre ativar (nenhum, `stable` ou `beta`); para mudar depois:
 `sudo dpkg-reconfigure kiyoshi-packages-repo`. Remover o pacote remove a fonte e a chave.
@@ -36,7 +37,7 @@ sudo install -d -m 0755 /etc/apt/keyrings
 sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg \
     https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages.gpg
 
-# SUITE: jammy, noble, bookworm ou trixie
+# SUITE: jammy, noble, resolute, bookworm ou trixie
 # COMPONENTES: "main" só para os programas; some "stable" ou "beta" (um dos dois) para o XLibre
 echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] https://kiyoshispreclerg.github.io/kiyoshi-packages SUITE main beta" |
     sudo tee /etc/apt/sources.list.d/kiyoshi-packages.list

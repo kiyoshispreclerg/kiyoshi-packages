@@ -10,7 +10,7 @@ if [ "$1" = configure ]; then
         [ -r /etc/os-release ] && . /etc/os-release
         for c in "${UBUNTU_CODENAME:-}" "${VERSION_CODENAME:-}"; do
             case "$c" in
-                jammy|noble|bookworm|trixie) echo "$c"; return ;;
+                jammy|noble|resolute|bookworm|trixie) echo "$c"; return ;;
                 daedalus) echo bookworm; return ;;
                 excalibur) echo trixie; return ;;
             esac
@@ -23,7 +23,7 @@ if [ "$1" = configure ]; then
     suite="$(codename)"
     if [ -z "$suite" ]; then
         echo "kiyoshi-packages-repo: unsupported system, no apt source written" >&2
-        echo "(supported: Ubuntu 22.04/24.04, Debian 12/13, Devuan 5/6)" >&2
+        echo "(supported: Ubuntu 22.04/24.04/26.04, Debian 12/13, Devuan 5/6)" >&2
     else
         # A manual setup for the same repository (other Signed-By) would make
         # apt refuse both: set aside the files that only hold this repository.

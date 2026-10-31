@@ -55,7 +55,7 @@ done
 owner="${self%%/*}"; url="https://${owner,,}.github.io/${self#*/}"
 gpg --export "$keyid" > repo-work/key.gpg
 scripts/build-repo-deb.sh repo-work/key.gpg repo-work/kiyoshi-packages-repo_all.deb "$url"
-for suite in jammy noble bookworm trixie; do
+for suite in jammy noble resolute bookworm trixie; do
     reprepro -b repo-work -C main includedeb "$suite" repo-work/kiyoshi-packages-repo_all.deb
 done
 

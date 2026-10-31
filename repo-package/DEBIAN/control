@@ -1,5 +1,5 @@
 Package: kiyoshi-packages-repo
-Version: 1.1
+Version: 1.2
 Section: admin
 Priority: optional
 Architecture: all
@@ -7,7 +7,7 @@ Depends: debconf (>= 1.5), apt
 Maintainer: Kiyoshi Spreclerg <kiyoshi_pip@protonmail.com>
 Description: kiyoshi-packages apt repository (key and sources)
  Adds the kiyoshi-packages apt repository to this system: installs its signing
- key and writes the apt source for this system's release (Ubuntu 22.04/24.04,
+ key and writes the apt source for this system's release (Ubuntu 22.04/24.04/26.04,
  Debian 12/13, Devuan 5/6). Removing the package removes both.
  .
  The XLibre channel (none, stable or beta) is asked on install and can be

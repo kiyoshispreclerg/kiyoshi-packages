@@ -80,10 +80,6 @@ for name in $(yq -r '.projects[].name' packages.yml); do
     done
     for deb in "$dir"/*.deb; do
         [ -e "$deb" ] || continue
-        case "$(basename "$deb")" in
-            *ubuntu26.04*|*ubuntu-26.04*)
-                echo "::notice::$name: $(basename "$deb"): alvo sem suite neste repositório; ignorado"; continue ;;
-        esac
         if ! out="$(retag "$deb")"; then
             echo "::warning::$name: $(basename "$deb") não indica o alvo (nem na versão nem no nome); ignorado"; continue
         fi

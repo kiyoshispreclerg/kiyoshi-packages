@@ -10,13 +10,13 @@ each target, signed, and served from GitHub Pages.
 
 | System | Suite |
 |---|---|
-| Ubuntu 22.04 | `jammy` |
-| Ubuntu 24.04 | `noble` |
+| Ubuntu 22.04 (Linux Mint 21) | `jammy` |
+| Ubuntu 24.04 (Linux Mint 22) | `noble` |
 | Ubuntu 26.04 | `resolute` |
 | Debian 12 | `bookworm` |
-| Debian 13 | `trixie` |
+| Debian 13 (LMDE 7) | `trixie` |
 
-Devuan 5 and 6 use the Debian 12 and 13 suites (`bookworm`, `trixie`).
+Linux Mint 21 and 22 use the Ubuntu 22.04 and 24.04 suites (`jammy`, `noble`); Devuan 5 and 6 use the Debian 12 and 13 suites (`bookworm`, `trixie`).
 Architecture: `amd64`.
 
 ## Use it
@@ -26,7 +26,7 @@ Architecture: `amd64`.
 Download [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages-repo_all.deb)
 and install it (double-click, or `sudo apt install ./kiyoshi-packages-repo_all.deb`).
 It installs the key and writes the apt source for your system (Ubuntu 22.04/24.04/26.04,
-Debian 12/13, Devuan 5/6); then `sudo apt update`. It asks which XLibre channel to
+Linux Mint 21/22, Debian 12/13, Devuan 5/6, LMDE 7); then `sudo apt update`. It asks which XLibre channel to
 enable (none, `stable` or `beta`); change it later with
 `sudo dpkg-reconfigure kiyoshi-packages-repo`. Removing the package removes the
 source and the key.

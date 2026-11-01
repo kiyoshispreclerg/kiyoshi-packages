@@ -63,5 +63,5 @@ mv repo-work/dists repo-work/pool site/ 2>/dev/null || true
 cp repo-work/kiyoshi-packages-repo_all.deb site/
 [ -d site/dists ] || { echo "publish: empty pool, creating empty suites"; reprepro -b repo-work export; mv repo-work/dists site/; mkdir -p site/pool; }
 gpg --export "$keyid" > site/kiyoshi-packages.gpg
-cp repo/index.html site/index.html
+cp repo/index.html repo/pt-BR.html site/
 echo "publish: $(find site/pool -name '*.deb' | wc -l) packages in site/"

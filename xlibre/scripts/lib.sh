@@ -180,5 +180,22 @@ apply_patches() {
     done
 }
 
+# source_patches DIR NAME UPSTREAM_VERSION: a source package can carry local fixes
+# in xlibre/patches/NAME/<upstream-version>-<N>/*.diff. They are applied only to a
+# tree of exactly that upstream version (a newer tag drops them, having them or
+# not) and the build gets the Debian revision N (25.0.0-2), above the plain -1
+# build of the same version. Prints N when the patches were applied.
+source_patches() {
+    local d f
+    d="$(compgen -G "$XLIBRE_DIR/patches/$2/$3-[0-9]*" | sort -V | tail -1)"
+    [ -d "$d" ] || return 0
+    for f in "$d"/*.diff; do
+        [ -e "$f" ] || continue
+        echo "applying $2/$(basename "$d")/$(basename "$f")" >&2
+        patch -d "$1" -p1 >&2 < "$f" || die "patch $(basename "$f") does not apply to $2 $3: delete $(basename "$d")"
+    done
+    echo "${d##*-}"
+}
+
 # meson.build version of a tree
 tree_version() { perl -0ne "print \$1 if /version:\s*'([0-9][^']*)'/" "$1/meson.build"; }

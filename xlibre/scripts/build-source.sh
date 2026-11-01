@@ -20,7 +20,8 @@ if [ "$repo" != - ]; then
     tag="$(git_fetch "$tree" "$UPSTREAM_BASE/$repo.git" "$uref")"
     info="$info code=$repo@$tag($(git -C "$tree" rev-parse HEAD))"
     swap_tree "$src" "$tree"
-    swap_version "$src" "${tag##*-}" "$repo $tag"
+    rev="$(source_patches "$src" "$name" "${tag##*-}")"
+    swap_version "$src" "${tag##*-}" "$repo $tag${rev:+ + local patches}" ${rev:+"$rev"}
 else
     ( cd "$src" && dch -b -v "$(dpkg-parsechangelog -l debian/changelog -S Version)~${TARGET}" \
         -D unstable --force-distribution "Rebuild for ${TARGET}" )

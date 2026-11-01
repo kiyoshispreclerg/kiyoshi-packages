@@ -112,6 +112,12 @@ nova do upstream.
   uma lista a `has_member(prefix:)`, que só o Meson ≥ 1.1 aceita; o 22.04 tem o
   0.61 e o Debian 12 o 1.0). Um patch que não aplica para o build: numa tag nova
   que já o contenha, apague o arquivo.
+* **patches locais de um driver/fonte:** `xlibre/patches/<fonte>/<versão>-<N>/*.diff`
+  (hoje `xserver-xlibre-video-vmware/25.0.0-2`, que liga o vmwgfx por padrão). São
+  aplicados só se a tag do upstream for exatamente `<versão>`, e o build sai com a
+  revisão N (`2:25.0.0-2~alvo`), acima do `-1` e sem mudar a versão do upstream.
+  Numa tag nova a pasta é ignorada; um patch que não aplica na versão certa
+  para o build. Para outro update na mesma versão, crie a pasta `-3`.
 * **drivers e `xorgproto`:** a tag mais nova de cada `X11Libre/xf86-*` (hoje
   quase todas `25.0.x`; as do NexusSfan também são) e `xorgproto-2025.1`. Valem
   para os dois canais. Para travar um driver, troque o `latest:...` por uma tag.

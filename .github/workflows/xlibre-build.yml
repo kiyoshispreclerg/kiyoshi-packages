@@ -150,8 +150,9 @@ jobs:
     install-test:
         name: install ${{ matrix.channel }} ${{ matrix.name }}
         needs: [plan, build]
-        # a partial build (only, or commits) has nothing complete to test
-        if: ${{ inputs.only == '' && needs.plan.outputs.commit != 'true' }}
+        # `only` builds a subset with nothing complete to test; a build from commits has
+        # just the cores, so the test fills in the rest from the published pool
+        if: ${{ inputs.only == '' }}
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         container:
@@ -165,6 +166,9 @@ jobs:
                 shell: bash
         env:
             DEBIAN_FRONTEND: noninteractive
+            FILL_FROM_POOL: ${{ needs.plan.outputs.commit }}
+            POOL_CHANNEL: ${{ matrix.channel }}
+            GH_TOKEN: ${{ github.token }}
         steps:
             - name: git and certificates
               run: |

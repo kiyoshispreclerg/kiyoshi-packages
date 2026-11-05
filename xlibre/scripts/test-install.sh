@@ -12,7 +12,30 @@ installed() { [ "$(dpkg-query -W -f='${db:Status-Status}' "$1" 2>/dev/null)" = i
 step() { printf '\n==== %s\n' "$*"; }
 
 apt-get update -qq
-apt-get install -y --no-install-recommends dpkg-dev ca-certificates >/dev/null
+apt-get install -y --no-install-recommends dpkg-dev ca-certificates curl jq >/dev/null
+
+# A build from commits has only the cores: take the other packages of this
+# channel and target from the published pool Release (never a package that was
+# just built, whatever its version).
+if [ "${FILL_FROM_POOL:-}" = true ]; then
+    step "fill in the packages that were not rebuilt from the pool Release"
+    . /etc/os-release
+    tag="?${ID}${VERSION_ID}_"   # GitHub turns the ~ of an asset name into a dot
+    built="$(for f in "$debs"/*.deb; do dpkg-deb -f "$f" Package; done | sort -u)"
+    curl -fsSL ${GH_TOKEN:+-H "Authorization: Bearer $GH_TOKEN"} \
+        "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases/tags/pool" |
+        jq -r '.assets[] | select(.name | endswith(".deb")) | "\(.name) \(.browser_download_url)"' |
+    while read -r name url; do
+        case "$name" in
+            "${POOL_CHANNEL:?}--"*) ;;
+            *--*) continue ;;   # the other channel
+        esac
+        case "$name" in *"$tag"*) ;; *) continue ;; esac
+        tmp="$(mktemp)"; curl -fsSL -o "$tmp" "$url"
+        grep -qxF "$(dpkg-deb -f "$tmp" Package)" <<<"$built" && { rm -f "$tmp"; continue; }
+        mv "$tmp" "$debs/${name#*--}"
+    done
+fi
 (cd "$debs" && dpkg-scanpackages --multiversion . > Packages 2>/dev/null)
 echo "deb [trusted=yes] file:$debs ./" > /etc/apt/sources.list.d/kiyoshi-local.list
 apt-get update -qq

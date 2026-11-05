@@ -113,7 +113,9 @@ if [ -n "$STOCK_VER" ]; then
       dch -b -v "${STOCK_VER}~${TARGET}~ngtest" -D unstable --force-distribution "gtk2ng exploration build" 2>/dev/null
       # The -doc packages ship HTML that the upstream tarball has pre-generated and a git
       # tree does not (first run: only dh_install of libgtk2.0-doc/libgail-doc failed): skip them
-      DH_OPTIONS="-Nlibgtk2.0-doc -Nlibgail-doc" dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )
+      # New symbols in libgtk2.0-0 are only reported (the check level is 4 in the distro's
+      # rules, which fails the build): the diff stays in build.log, and it is the ABI result
+      DPKG_GENSYMBOLS_CHECK_LEVEL=0 DH_OPTIONS="-Nlibgtk2.0-doc -Nlibgail-doc" dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )
     BUILD_RC=$?
     say "dpkg-buildpackage exit code: $BUILD_RC (full log: build.log)"
     tail -n 40 "$REPORT_DIR/build.log" | code

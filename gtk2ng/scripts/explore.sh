@@ -106,6 +106,8 @@ if [ -n "$STOCK_VER" ]; then
     rm -rf ng/debian
     cp -a stock/debian ng/debian
     ( cd ng || exit 1
+      # The distro's rules ship README, which `make dist` generates from README.in
+      [ -e README ] || cp README.md README
       # The patches that fit are already applied (previous step): empty series
       : > debian/patches/series
       dch -b -v "${STOCK_VER}~${TARGET}~ngtest" -D unstable --force-distribution "gtk2ng exploration build" 2>/dev/null

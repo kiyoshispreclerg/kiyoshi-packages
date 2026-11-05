@@ -109,7 +109,9 @@ if [ -n "$STOCK_VER" ]; then
       # The patches that fit are already applied (previous step): empty series
       : > debian/patches/series
       dch -b -v "${STOCK_VER}~${TARGET}~ngtest" -D unstable --force-distribution "gtk2ng exploration build" 2>/dev/null
-      dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )
+      # The -doc packages ship HTML that the upstream tarball has pre-generated and a git
+      # tree does not (first run: only dh_install of libgtk2.0-doc/libgail-doc failed): skip them
+      DH_OPTIONS="-Nlibgtk2.0-doc -Nlibgail-doc" dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )
     BUILD_RC=$?
     say "dpkg-buildpackage exit code: $BUILD_RC (full log: build.log)"
     tail -n 40 "$REPORT_DIR/build.log" | code

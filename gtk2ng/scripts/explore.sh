@@ -80,7 +80,9 @@ mkdir -p good
 if [ -n "$STOCK_VER" ]; then
     while read -r p _; do
         case "$p" in ''|'#'*) continue ;; esac
+        # applied for real, in series order, so each one is tried on top of the previous ones
         if patch -d ng -p1 -N -s --dry-run < "stock/debian/patches/$p" >/dev/null 2>&1; then
+            patch -d ng -p1 -N -s < "stock/debian/patches/$p" >/dev/null
             say "- applies: $p"; echo "$p" >> good/series
         elif patch -d ng -p1 -R -s --dry-run < "stock/debian/patches/$p" >/dev/null 2>&1; then
             say "- already in gtk2-ng: $p"
@@ -100,10 +102,11 @@ if apt-get install -y -qq libfribidi-dev >/dev/null 2>&1; then say "libfribidi-d
 
 step "Build gtk2-ng with the distro's debian/ directory"
 if [ -n "$STOCK_VER" ]; then
+    # gtk2-ng carries an old debian/ of its own (gtk+-cvs, 1998): replace it
+    rm -rf ng/debian
     cp -a stock/debian ng/debian
     ( cd ng || exit 1
-      # Drop the distro's patches; apply the ones that fit by hand, then an empty series
-      while read -r p; do patch -p1 -N -s < "debian/patches/$p" || echo "patch $p failed"; done < "$WORK/good/series"
+      # The patches that fit are already applied (previous step): empty series
       : > debian/patches/series
       dch -b -v "${STOCK_VER}~${TARGET}~ngtest" -D unstable --force-distribution "gtk2ng exploration build" 2>/dev/null
       dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )

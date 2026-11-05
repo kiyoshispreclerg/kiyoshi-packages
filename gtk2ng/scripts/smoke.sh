@@ -44,9 +44,10 @@ run_app() { # COMMAND LABEL
 ng_installed() { dpkg-query -W -f='${Package} ${Version}\n' 2>/dev/null | grep -c 'ngtest'; }
 
 step "Target: $PRETTY_NAME"
-ls "$DEBS" | grep -v dbgsym | sed 's/^/- /' | tee -a "$R" >/dev/null
+find "$DEBS" -maxdepth 1 -name '*.deb' ! -name '*dbgsym*' -printf '- %f\n' | sort | tee -a "$R" >/dev/null
 # libgtk2.0-0 or libgtk2.0-0t64, whichever this suite has
-LIB="$(dpkg-deb -f "$(ls "$DEBS"/libgtk2.0-0*.deb | grep -v dbgsym | head -1)" Package)"
+LIBDEB="$(find "$DEBS" -maxdepth 1 -name 'libgtk2.0-0*.deb' ! -name '*dbgsym*' | head -1)"
+LIB="$(dpkg-deb -f "$LIBDEB" Package)"
 say "library package: \`$LIB\`"
 
 step "The distro's GTK2 (baseline)"
@@ -56,8 +57,9 @@ apt-get install -y -qq --no-install-recommends build-essential pkg-config xvfb x
 STOCK_VER="$(dpkg-query -W -f='${Version}' "$LIB")"
 say "stock \`$LIB\` $STOCK_VER"
 # shellcheck disable=SC2046
-gcc -o "$WORK/smoke-stock" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log" \
-    && ok "test program compiled against the distro's libgtk2.0-dev" || bad "compiling the test program"
+if gcc -o "$WORK/smoke-stock" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log"; then
+    ok "test program compiled against the distro's libgtk2.0-dev"
+else bad "compiling the test program"; fi
 run_smoke "$WORK/smoke-stock" "baseline (distro GTK2)"
 # a real application, if the suite still has one
 if apt-get install -y -qq --no-install-recommends leafpad >/dev/null 2>&1; then
@@ -78,8 +80,9 @@ say "the test program loads: \`$LIBFILE\` (package: $(dpkg -S "$LIBFILE" 2>/dev/
 check "the loaded libgtk belongs to a gtk2-ng package" bash -c "dpkg -l '$LIB' | grep -q ngtest"
 run_smoke "$WORK/smoke-stock" "same binary, now with gtk2-ng"
 # shellcheck disable=SC2046
-gcc -o "$WORK/smoke-ng" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log" \
-    && ok "test program compiled against gtk2-ng's libgtk2.0-dev" || bad "compiling against gtk2-ng"
+if gcc -o "$WORK/smoke-ng" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log"; then
+    ok "test program compiled against gtk2-ng's libgtk2.0-dev"
+else bad "compiling against gtk2-ng"; fi
 run_smoke "$WORK/smoke-ng" "rebuilt against gtk2-ng"
 check "immodules.cache was generated" bash -c 'test -s /usr/lib/*/gtk-2.0/2.10.0/immodules.cache'
 check "gtk-update-icon-cache runs" bash -c 'gtk-update-icon-cache --help'
@@ -91,7 +94,7 @@ step "Back to the distro's packages"
 mapfile -t NGPKG < <(dpkg-query -W -f='${Package} ${Version}\n' | awk '/ngtest/{print $1}')
 if apt-get install -y --allow-downgrades "${NGPKG[@]}" >"$REPORT_DIR/revert.log" 2>&1; then ok "apt install ${NGPKG[*]}"
 else bad "going back to the distro's packages"; tail -n 15 "$REPORT_DIR/revert.log" | tee -a "$R"; fi
-[ "$(ng_installed)" = 0 ] && ok "no gtk2-ng package is left" || bad "gtk2-ng packages are still installed"
+if [ "$(ng_installed)" = 0 ]; then ok "no gtk2-ng package is left"; else bad "gtk2-ng packages are still installed"; fi
 run_smoke "$WORK/smoke-stock" "after going back"
 
 step "Result"

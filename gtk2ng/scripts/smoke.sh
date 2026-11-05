@@ -1,11 +1,15 @@
 #!/bin/bash
 # Smoke test of the gtk2-ng packages built by explore.sh, on ONE target (the
-# container it runs in). With the distro's own GTK2 it compiles a test program
-# and runs it as a baseline, then installs the gtk2-ng .deb files over it and
-# runs the SAME binary again (and a rebuilt one, and a real GTK2 program), then
-# goes back to the distro's packages and runs it a third time.
+# container it runs in). With the distro's own GTK2 it installs kidesktop-core (a
+# real GTK2 program that asks for the distro's package names), compiles a test
+# program and runs both as a baseline; then installs the gtk2-ng packages (the
+# metapackage and the rest) and checks that apt swaps the libraries, keeps
+# kidesktop-core, and that both programs, the SAME binaries, still run; then
+# installs the distro's library again, which has to remove gtk2-ng with no
+# other change, and runs them a third time.
 #
 #   DEBS        directory with the .deb files   (default: ./debs)
+#   FLAVOR      ng or king                      (default: ng)
 #   REPORT_DIR  where the report goes           (default: ./gtk2ng-smoke)
 # Exit code: 0 if every check passed.
 set -uo pipefail
@@ -13,8 +17,10 @@ export DEBIAN_FRONTEND=noninteractive
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEBS="$(realpath "${DEBS:-$PWD/debs}")"
+FLAVOR="${FLAVOR:-ng}"
 REPORT_DIR="$(realpath -m "${REPORT_DIR:-$PWD/gtk2ng-smoke}")"
 WORK="${WORK:-$PWD/gtk2ng-smoke-work}"
+REPO_URL="https://kiyoshispreclerg.github.io/kiyoshi-packages"
 . /etc/os-release
 mkdir -p "$REPORT_DIR" "$WORK"
 R="$REPORT_DIR/summary.md"
@@ -36,66 +42,81 @@ run_smoke() { # BINARY LABEL
     else bad "$2 (exit $rc): $(tail -n 3 <<<"$out" | tr '\n' ' ')"; fi
 }
 # a real GTK2 program must stay up for a few seconds (timeout's 124 means it did not crash)
-run_app() { # COMMAND LABEL
-    local rc
-    timeout 6 xvfb-run -a "$1" >>"$REPORT_DIR/smoke.log" 2>&1; rc=$?
-    if [ "$rc" = 124 ]; then ok "$2 ran for 6 s"; else bad "$2 exited with $rc"; fi
+run_app() { # LABEL COMMAND...
+    local rc label="$1"; shift
+    timeout 6 xvfb-run -a "$@" >>"$REPORT_DIR/smoke.log" 2>&1; rc=$?
+    if [ "$rc" = 124 ]; then ok "$label ran for 6 s"; else bad "$label exited with $rc"; fi
 }
-ng_installed() { dpkg-query -W -f='${Package} ${Version}\n' 2>/dev/null | grep -c 'ngtest'; }
+# installed packages of the gtk2-ng line (gtk2-ng, libgtk2-ng-0, libgail-ng-18, gir1.2-gtk-2.0-ng, ...)
+ng_installed() { dpkg-query -W -f='${Package}\n' 2>/dev/null | grep -cE "(^|-)(ng|king)(-|$)"; }
 
-step "Target: $PRETTY_NAME"
+step "Target: $PRETTY_NAME (gtk2-$FLAVOR)"
 find "$DEBS" -maxdepth 1 -name '*.deb' ! -name '*dbgsym*' -printf '- %f\n' | sort | tee -a "$R" >/dev/null
-# libgtk2.0-0 or libgtk2.0-0t64, whichever this suite has
-LIBDEB="$(find "$DEBS" -maxdepth 1 -name 'libgtk2.0-0*.deb' ! -name '*dbgsym*' | head -1)"
-LIB="$(dpkg-deb -f "$LIBDEB" Package)"
-say "library package: \`$LIB\`"
 
-step "The distro's GTK2 (baseline)"
+step "The distro's GTK2 and kidesktop-core (baseline)"
 apt-get update -qq
-apt-get install -y -qq --no-install-recommends build-essential pkg-config xvfb xauth \
-    libgtk2.0-dev "$LIB" >/dev/null 2>&1 || bad "installing the distro's GTK2 and the tools"
-STOCK_VER="$(dpkg-query -W -f='${Version}' "$LIB")"
-say "stock \`$LIB\` $STOCK_VER"
+apt-get install -y -qq --no-install-recommends build-essential pkg-config xvfb xauth curl ca-certificates \
+    libgtk2.0-dev >/dev/null 2>&1 || bad "installing the distro's GTK2 and the tools"
+STOCKLIB="$(dpkg-query -W -f='${Package}\n' 'libgtk2.0-0*' | grep -v udeb | head -1)"
+STOCK_VER="$(dpkg-query -W -f='${Version}' "$STOCKLIB")"
+say "distro library: \`$STOCKLIB\` $STOCK_VER"
 # shellcheck disable=SC2046
 if gcc -o "$WORK/smoke-stock" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log"; then
     ok "test program compiled against the distro's libgtk2.0-dev"
 else bad "compiling the test program"; fi
-run_smoke "$WORK/smoke-stock" "baseline (distro GTK2)"
-# a real application, if the suite still has one
-if apt-get install -y -qq --no-install-recommends leafpad >/dev/null 2>&1; then
-    run_app leafpad "leafpad (distro GTK2)"
-else say "- (no leafpad in this suite: skipped)"; fi
+run_smoke "$WORK/smoke-stock" "baseline test program (distro GTK2)"
 
-step "Install the gtk2-ng packages"
+# kidesktop-core from this repository's own apt archive: the newest one of this suite
+SUITE="${VERSION_CODENAME:-}"
+KD_FILE="$(curl -fsS "$REPO_URL/dists/$SUITE/main/binary-amd64/Packages" 2>>"$REPORT_DIR/smoke.log" \
+    | awk -v RS= '/^Package: kidesktop-core\n/{for(i=1;i<=NF;i++) if($i=="Filename:") print $(i+1)}' | tail -1)"
+if [ -n "$KD_FILE" ] && curl -fsSL -o "$WORK/kidesktop-core.deb" "$REPO_URL/$KD_FILE" 2>>"$REPORT_DIR/smoke.log" \
+        && apt-get install -y -qq --no-install-recommends "$WORK/kidesktop-core.deb" >>"$REPORT_DIR/smoke.log" 2>&1; then
+    ok "kidesktop-core installed ($(dpkg-query -W -f='${Version}' kidesktop-core)); it depends on: $(dpkg-query -W -f='${Depends}' kidesktop-core | tr ',' '\n' | grep -o 'libgtk2[^ ]* ([^)]*)')"
+    run_app "kiconf --kitheme (distro GTK2)" kiconf --kitheme
+else
+    bad "could not get and install kidesktop-core for $SUITE from $REPO_URL"
+fi
+
+step "Install the gtk2-$FLAVOR packages"
 mapfile -t NG < <(find "$DEBS" -maxdepth 1 -name '*.deb' ! -name '*dbgsym*' | sort)
-# their version ends in ~ngtest, below the distro's: this is a downgrade for apt
-if apt-get install -y --allow-downgrades "${NG[@]}" >"$REPORT_DIR/install.log" 2>&1; then ok "apt install of ${#NG[@]} packages"
-else bad "apt install of the gtk2-ng packages"; tail -n 15 "$REPORT_DIR/install.log" | tee -a "$R"; fi
-say "gtk2-ng packages installed: $(ng_installed)"
-dpkg -l | grep -E 'libgtk2|libgail|gtk2-engines|gir1.2-gtk-2' | awk '{print "- " $2 " " $3}' | tee -a "$R" >/dev/null
+# one apt call with every package, as a user would do `apt install gtk2-ng` (the metapackage
+# is in the list): apt has to remove the distro's libraries by itself
+if apt-get install -y "${NG[@]}" >"$REPORT_DIR/install.log" 2>&1; then ok "apt install of ${#NG[@]} packages"
+else bad "apt install of the gtk2-$FLAVOR packages"; tail -n 20 "$REPORT_DIR/install.log" | tee -a "$R"; fi
+say "gtk2-$FLAVOR packages installed: $(ng_installed)"
+dpkg -l | grep -E 'libgtk2|libgail|gtk2-|gir1.2-gtk-2' | awk '{print "- " $2 " " $3}' | tee -a "$R" >/dev/null
+check "the distro's $STOCKLIB is gone (replaced by gtk2-$FLAVOR)" bash -c "! dpkg-query -W -f='\${Status}' $STOCKLIB 2>/dev/null | grep -q 'install ok installed'"
+check "kidesktop-core is still installed (its dependency on libgtk2.0 is met by Provides)" bash -c "dpkg-query -W -f='\${Status}' kidesktop-core | grep -q 'install ok installed'"
+say "the library now provides: $(dpkg-query -W -f='${Provides}' "libgtk2-$FLAVOR-0")"
 
-step "With gtk2-ng"
+step "With gtk2-$FLAVOR"
 LIBFILE="$(readlink -f "$(ldd "$WORK/smoke-stock" | awk '/libgtk-x11-2.0/{print $3}')")"
 say "the test program loads: \`$LIBFILE\` (package: $(dpkg -S "$LIBFILE" 2>/dev/null | cut -d: -f1))"
-check "the loaded libgtk belongs to a gtk2-ng package" bash -c "dpkg -l '$LIB' | grep -q ngtest"
-run_smoke "$WORK/smoke-stock" "same binary, now with gtk2-ng"
+check "the loaded libgtk belongs to libgtk2-$FLAVOR-0" bash -c "dpkg -S '$LIBFILE' | grep -q '^libgtk2-$FLAVOR-0'"
+run_smoke "$WORK/smoke-stock" "same test binary, now with gtk2-$FLAVOR"
+run_app "kiconf --kitheme (gtk2-$FLAVOR)" kiconf --kitheme
 # shellcheck disable=SC2046
 if gcc -o "$WORK/smoke-ng" "$HERE/smoke/smoke.c" $(pkg-config --cflags --libs gtk+-2.0 gtk+-unix-print-2.0) 2>>"$REPORT_DIR/smoke.log"; then
-    ok "test program compiled against gtk2-ng's libgtk2.0-dev"
-else bad "compiling against gtk2-ng"; fi
-run_smoke "$WORK/smoke-ng" "rebuilt against gtk2-ng"
+    ok "test program compiled against gtk2-$FLAVOR's libgtk2-$FLAVOR-dev"
+else bad "compiling against gtk2-$FLAVOR"; fi
+run_smoke "$WORK/smoke-ng" "rebuilt against gtk2-$FLAVOR"
 check "immodules.cache was generated" bash -c 'test -s /usr/lib/*/gtk-2.0/2.10.0/immodules.cache'
 check "gtk-update-icon-cache runs" bash -c 'gtk-update-icon-cache --help'
-if command -v leafpad >/dev/null; then run_app leafpad "leafpad (gtk2-ng)"; fi
 check "dpkg is consistent" dpkg --audit
 check "apt has nothing broken" apt-get check
 
-step "Back to the distro's packages"
-mapfile -t NGPKG < <(dpkg-query -W -f='${Package} ${Version}\n' | awk '/ngtest/{print $1}')
-if apt-get install -y --allow-downgrades "${NGPKG[@]}" >"$REPORT_DIR/revert.log" 2>&1; then ok "apt install ${NGPKG[*]}"
-else bad "going back to the distro's packages"; tail -n 15 "$REPORT_DIR/revert.log" | tee -a "$R"; fi
-if [ "$(ng_installed)" = 0 ]; then ok "no gtk2-ng package is left"; else bad "gtk2-ng packages are still installed"; fi
-run_smoke "$WORK/smoke-stock" "after going back"
+step "Back to the distro's GTK2: apt install $STOCKLIB"
+if apt-get install -y "$STOCKLIB" libgtk2.0-common libgtk2.0-bin libgtk2.0-dev >"$REPORT_DIR/revert.log" 2>&1; then
+    ok "apt install $STOCKLIB libgtk2.0-common libgtk2.0-bin libgtk2.0-dev"
+else bad "going back to the distro's packages"; tail -n 20 "$REPORT_DIR/revert.log" | tee -a "$R"; fi
+say "gtk2-$FLAVOR packages left: $(ng_installed)"
+dpkg -l | grep -E 'libgtk2|libgail|gtk2-|gir1.2-gtk-2' | awk '{print "- " $2 " " $3}' | tee -a "$R" >/dev/null
+if [ "$(ng_installed)" = 0 ]; then ok "the metapackage and all gtk2-$FLAVOR packages were removed"; else bad "gtk2-$FLAVOR packages are still installed"; fi
+check "kidesktop-core is still installed" bash -c "dpkg-query -W -f='\${Status}' kidesktop-core | grep -q 'install ok installed'"
+run_smoke "$WORK/smoke-stock" "test program after going back"
+run_app "kiconf --kitheme (distro GTK2 again)" kiconf --kitheme
+check "dpkg is consistent" dpkg --audit
 
 step "Result"
 if [ "$FAILS" = 0 ]; then say "all checks passed"; else say "**$FAILS check(s) failed**"; fi

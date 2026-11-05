@@ -11,6 +11,14 @@ on:
             ref:
                 description: 'gtk2-ng branch, tag or commit; empty = master (gtk2-ng); x-density, later king'
                 required: false
+            flavor:
+                description: 'ng (the mirror of Devuan, packages gtk2-ng) or king (the changes of the Kiyoshi fork, gtk2-king)'
+                type: choice
+                options: [ng, king]
+                default: ng
+            rev:
+                description: 'Revision of the same source (1 gives ...-1ng1); empty = 1'
+                required: false
             url:
                 description: 'gtk2-ng git URL; empty = kiyoshispreclerg/gtk2-ng (its master mirrors Devuan)'
                 required: false
@@ -43,9 +51,12 @@ jobs:
               env:
                   GTK2NG_REF: ${{ inputs.ref }}
                   GTK2NG_URL: ${{ inputs.url }}
+                  FLAVOR: ${{ inputs.flavor }}
+                  NG_REV: ${{ inputs.rev }}
               run: |
                   [ -n "$GTK2NG_REF" ] || unset GTK2NG_REF
                   [ -n "$GTK2NG_URL" ] || unset GTK2NG_URL
+                  [ -n "$NG_REV" ] || unset NG_REV
                   REPORT_DIR="$PWD/report" repo/gtk2ng/scripts/explore.sh
                   cat report/summary.md >> "$GITHUB_STEP_SUMMARY"
             - uses: actions/upload-artifact@v4
@@ -84,7 +95,7 @@ jobs:
                   path: debs
             - name: Smoke test
               run: |
-                  DEBS="$PWD/debs" REPORT_DIR="$PWD/smoke-report" repo/gtk2ng/scripts/smoke.sh; rc=$?
+                  FLAVOR="${{ inputs.flavor }}" DEBS="$PWD/debs" REPORT_DIR="$PWD/smoke-report" repo/gtk2ng/scripts/smoke.sh; rc=$?
                   cat smoke-report/summary.md >> "$GITHUB_STEP_SUMMARY"
                   exit $rc
             - uses: actions/upload-artifact@v4

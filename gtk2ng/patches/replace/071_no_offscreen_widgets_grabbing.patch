@@ -1,0 +1,20 @@
+Description: Do not let widgets in an offscreen window grab
+Origin: debian/patches/071_no_offscreen_widgets_grabbing.patch, refreshed for gtk2-ng
+
+--- a/gtk/gtkmain.c
++++ b/gtk/gtkmain.c
+@@ -1872,9 +1872,14 @@
+ {
+   GtkWindowGroup *group;
+   GtkWidget *old_grab_widget;
++  GtkWidget *toplevel;
+ 
+   g_return_if_fail (widget != NULL);
+ 
++  toplevel = gtk_widget_get_toplevel (widget);
++  if (toplevel && gdk_window_get_window_type (toplevel->window) == GDK_WINDOW_OFFSCREEN)
++    return;
++
+   if (!gtk_widget_has_grab (widget) && gtk_widget_is_sensitive (widget))
+     {
+       _gtk_widget_set_has_grab (widget, TRUE);

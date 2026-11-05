@@ -1,0 +1,13 @@
+# Distro patches that are not applied to gtk2-ng, with the reason. Format:
+#   <patch name as in the distro's debian/patches/series> | <reason>
+# A patch with a file of the same name in replace/ is applied from there instead.
+CVE-2024-6655.patch | already in gtk2-ng: gtk/gtkmodules.c find_module returns NULL when the module is not in the module path (no fallback to the current directory), as upstream's fix does
+060_ignore-random-icons.patch | already in gtk2-ng: gtk/updateiconcache.c skips images whose directory is unknown
+004_gtk+-ximian-gtk2-filesel-navbutton-5.patch | only changes GtkFileSelection, deprecated since GTK 2.4 (GtkFileChooser is what apps use)
+005_support_disabling_x11_extensions.patch | only used by the Debian Installer's udeb build, which we do not build
+063_treeview_almost_fixed.patch | private property for Ubuntu's software-center, which no longer exists
+Check-for-attribute-availability-before-accessing-it.patch | to review: fails on noble and trixie
+gtk2-c99.patch | C99 fixes for the distro's compiler: gtk2-ng builds without it (checked on trixie and resolute)
+gtk2-c89.patch | same
+gtk2-c89-2.patch | same
+gtk2-c89-3.patch | same

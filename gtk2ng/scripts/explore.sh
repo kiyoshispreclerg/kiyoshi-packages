@@ -7,12 +7,17 @@
 #
 #   GTK2NG_URL  git URL of gtk2-ng        (default: Kiyoshi's fork, whose master mirrors Devuan's)
 #   GTK2NG_REF  branch, tag or commit      (default: master)
+#   FLAVOR      ng (the mirror of Devuan's gtk2-ng) or king (the fork's own changes); names the packages
+#   NG_REV      revision of the same source (1, 2, ...; gives ...-1ng1, ...-1ng2)
 #   REPORT_DIR  where the report goes      (default: ./gtk2ng-report)
 set -uo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 GTK2NG_URL="${GTK2NG_URL:-https://github.com/kiyoshispreclerg/gtk2-ng.git}"
 GTK2NG_REF="${GTK2NG_REF:-master}"
+FLAVOR="${FLAVOR:-ng}"
+NG_REV="${NG_REV:-1}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPORT_DIR="$(realpath -m "${REPORT_DIR:-$PWD/gtk2ng-report}")"
 WORK="${WORK:-$PWD/gtk2ng-work}"
 . /etc/os-release
@@ -39,7 +44,7 @@ fi
 apt-get update -qq
 if apt-get install -y -qq --no-install-recommends \
     build-essential dpkg-dev devscripts fakeroot git ca-certificates patch \
-    autoconf automake libtool pkg-config gettext debhelper dh-autoreconf >/dev/null
+    autoconf automake libtool pkg-config gettext debhelper dh-autoreconf python3 >/dev/null
 then say "ok"; else say "FAILED installing tools"; fi
 
 step "Stock gtk+2.0 source package"
@@ -75,19 +80,28 @@ else
 fi
 
 step "Do the distro's patches apply to gtk2-ng?"
+# gtk2ng/patches/skip.txt: patches left out, with the reason; gtk2ng/patches/replace/<name>:
+# the same patch refreshed for gtk2-ng, applied instead of the distro's
+PATCHES="$HERE/patches"
 mkdir -p good
 : > good/series
 if [ -n "$STOCK_VER" ]; then
     while read -r p _; do
         case "$p" in ''|'#'*) continue ;; esac
+        base="$(basename "$p")"
+        skip="$(grep -F "$base |" "$PATCHES/skip.txt" | head -1 | sed 's/^[^|]*| *//')"
+        if [ -n "$skip" ]; then say "- skipped: $p ($skip)"; continue; fi
+        src="stock/debian/patches/$p"
+        origin="distro's"
+        if [ -f "$PATCHES/replace/$base" ]; then src="$PATCHES/replace/$base"; origin="refreshed"; fi
         # applied for real, in series order, so each one is tried on top of the previous ones
-        if patch -d ng -p1 -N -s --dry-run < "stock/debian/patches/$p" >/dev/null 2>&1; then
-            patch -d ng -p1 -N -s < "stock/debian/patches/$p" >/dev/null
-            say "- applies: $p"; echo "$p" >> good/series
-        elif patch -d ng -p1 -R -s --dry-run < "stock/debian/patches/$p" >/dev/null 2>&1; then
+        if patch -d ng -p1 -N -s --dry-run < "$src" >/dev/null 2>&1; then
+            patch -d ng -p1 -N -s < "$src" >/dev/null
+            say "- applies ($origin): $p"; echo "$p" >> good/series
+        elif patch -d ng -p1 -R -s --dry-run < "$src" >/dev/null 2>&1; then
             say "- already in gtk2-ng: $p"
         else
-            say "- FAILS: $p"
+            say "- FAILS ($origin): $p"
         fi
     done < stock/debian/patches/series
 fi
@@ -101,6 +115,13 @@ grep -nE 'PKG_CHECK_MODULES|_required_version=|AM_PATH|--with-|--enable-' ng/con
 if apt-get install -y -qq libfribidi-dev >/dev/null 2>&1; then say "libfribidi-dev: ok"; else say "FAILED: libfribidi-dev"; fi
 
 step "Build gtk2-ng with the distro's debian/ directory"
+# Version: <upstream>+git<date of the commit>-1<flavor><N>~<target>, e.g.
+# 2.24.33+git20261105-1ng1~ubuntu22.04 (the date, not the hash: it sorts)
+UP_VER="$(sed -n 's/^m4_define(\[gtk_\(major\|minor\|micro\)_version\], \[\([0-9]*\)\])/\2/p' ng/configure.ac | head -3 | paste -sd.)"
+NG_COMMIT="$(git -C ng rev-parse --short=9 HEAD)"
+NG_DATE="$(git -C ng show -s --format=%cd --date=format:%Y%m%d HEAD)"
+NG_VER="${UP_VER}+git${NG_DATE}-1${FLAVOR}${NG_REV}~${TARGET}"
+say "version: \`$NG_VER\` (gtk2-ng $NG_COMMIT)"
 if [ -n "$STOCK_VER" ]; then
     # gtk2-ng carries an old debian/ of its own (gtk+-cvs, 1998): replace it
     rm -rf ng/debian
@@ -110,7 +131,7 @@ if [ -n "$STOCK_VER" ]; then
       [ -e README ] || cp README.md README
       # The patches that fit are already applied (previous step): empty series
       : > debian/patches/series
-      dch -b -v "${STOCK_VER}~${TARGET}~ngtest" -D unstable --force-distribution "gtk2ng exploration build" 2>/dev/null
+      dch -b -v "$NG_VER" -D unstable --force-distribution "gtk2-$FLAVOR build of $NG_COMMIT for $TARGET (the distro's packaging is ${STOCK_VER})" 2>/dev/null
       # The -doc packages ship HTML that the upstream tarball has pre-generated and a git
       # tree does not (first run: only dh_install of libgtk2.0-doc/libgail-doc failed): skip them
       # New symbols in libgtk2.0-0 are only reported (the check level is 4 in the distro's
@@ -141,10 +162,16 @@ if [ "$BUILD_RC" = 0 ]; then
     ( cd cmp/stock && find . -type f -o -type l | sort ) > cmp/files.stock
     ( cd cmp/ng && find . -type f -o -type l | sort ) > cmp/files.ng
     comm -23 cmp/files.stock cmp/files.ng | grep -vE '/share/(doc|man|locale|gtk-doc)/' | code
-    say "Binary packages produced by gtk2-ng:"
-    find . -maxdepth 1 -name '*.deb' -printf '%f\n' | sort | code
-    cp ./*.deb "$REPORT_DIR/" 2>/dev/null
-    say "Reverse dependencies on the stock names that must keep resolving: see Provides above."
+    step "Packages: renamed to gtk2-$FLAVOR, with the metapackage"
+    if python3 "$HERE/scripts/ngify.py" --flavor "$FLAVOR" --stock-ver "$STOCK_VER" --commit "$NG_COMMIT" \
+            --out "$WORK/ngdebs" ./*.deb >"$REPORT_DIR/ngify.log" 2>&1; then
+        find "$WORK/ngdebs" -name '*.deb' -printf '%f\n' | sort | code
+        cp "$WORK"/ngdebs/*.deb "$REPORT_DIR/"
+        say "Provides, Conflicts and Replaces of the library:"
+        dpkg-deb -f "$WORK"/ngdebs/libgtk2-"$FLAVOR"-0_*.deb Provides Conflicts Replaces | code
+    else
+        say "FAILED: ngify (ngify.log)"; tail -n 15 "$REPORT_DIR/ngify.log" | code
+    fi
 else
     say "skipped: the build failed"
 fi

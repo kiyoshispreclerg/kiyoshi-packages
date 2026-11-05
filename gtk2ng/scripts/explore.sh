@@ -33,13 +33,14 @@ for f in /etc/apt/sources.list.d/*.sources; do
     [ -e "$f" ] && sed -i 's/^Types: deb$/Types: deb deb-src/' "$f"
 done
 if [ -f /etc/apt/sources.list ]; then
-    sed -n 's/^deb /deb-src /p' /etc/apt/sources.list >> /etc/apt/sources.list
+    sed -n 's/^deb /deb-src /p' /etc/apt/sources.list > "$WORK/deb-src.list"
+    cat "$WORK/deb-src.list" >> /etc/apt/sources.list
 fi
 apt-get update -qq
-apt-get install -y -qq --no-install-recommends \
+if apt-get install -y -qq --no-install-recommends \
     build-essential dpkg-dev devscripts fakeroot git ca-certificates patch \
-    autoconf automake libtool pkg-config gettext debhelper dh-autoreconf >/dev/null \
-    && say "ok" || say "FAILED installing tools"
+    autoconf automake libtool pkg-config gettext debhelper dh-autoreconf >/dev/null
+then say "ok"; else say "FAILED installing tools"; fi
 
 step "Stock gtk+2.0 source package"
 cd "$WORK" || exit 1
@@ -60,16 +61,18 @@ fi
 
 step "Stock binaries (to compare against)"
 mkdir -p stock-bin && cd stock-bin || exit 1
-for p in $(grep -E '^Package:' ../stock/debian/control 2>/dev/null | awk '{print $2}'); do
-    apt-get download -qq "$p" 2>/dev/null && echo "downloaded $p" >> "$R"
-done
+while read -r p; do
+    if apt-get download -qq "$p" 2>/dev/null; then echo "downloaded $p" >> "$R"; fi
+done < <(grep -E '^Package:' ../stock/debian/control 2>/dev/null | awk '{print $2}')
 cd "$WORK" || exit 1
-ls stock-bin | code
+find stock-bin -name '*.deb' -printf '%f\n' | sort | code
 
 step "gtk2-ng source"
-git clone -q "$GTK2NG_URL" ng && git -C ng checkout -q "$GTK2NG_REF" \
-    && say "commit: \`$(git -C ng rev-parse --short HEAD)\`, tracked configure: $(git -C ng ls-files configure | wc -l)" \
-    || { say "FAILED to clone/checkout gtk2-ng"; exit 1; }
+if git clone -q "$GTK2NG_URL" ng && git -C ng checkout -q "$GTK2NG_REF"; then
+    say "commit: \`$(git -C ng rev-parse --short HEAD)\`, tracked configure: $(git -C ng ls-files configure | wc -l)"
+else
+    say "FAILED to clone/checkout gtk2-ng"; exit 1
+fi
 
 step "Do the distro's patches apply to gtk2-ng?"
 mkdir -p good
@@ -93,12 +96,12 @@ else say "FAILED: apt-get build-dep gtk+2.0"; fi
 # gtk2-ng needs fribidi; list what its configure asks for beyond the stock list
 say "gtk2-ng configure.ac requirements:"
 grep -nE 'PKG_CHECK_MODULES|_required_version=|AM_PATH|--with-|--enable-' ng/configure.ac | grep -ciE 'fribidi' | sed 's/^/fribidi mentions: /' | code
-apt-get install -y -qq libfribidi-dev >/dev/null 2>&1 && say "libfribidi-dev: ok" || say "FAILED: libfribidi-dev"
+if apt-get install -y -qq libfribidi-dev >/dev/null 2>&1; then say "libfribidi-dev: ok"; else say "FAILED: libfribidi-dev"; fi
 
 step "Build gtk2-ng with the distro's debian/ directory"
 if [ -n "$STOCK_VER" ]; then
     cp -a stock/debian ng/debian
-    ( cd ng
+    ( cd ng || exit 1
       # Drop the distro's patches; apply the ones that fit by hand, then an empty series
       while read -r p; do patch -p1 -N -s < "debian/patches/$p" || echo "patch $p failed"; done < "$WORK/good/series"
       : > debian/patches/series
@@ -130,7 +133,7 @@ if [ "$BUILD_RC" = 0 ]; then
     ( cd cmp/ng && find . -type f -o -type l | sort ) > cmp/files.ng
     comm -23 cmp/files.stock cmp/files.ng | grep -vE '/share/(doc|man|locale|gtk-doc)/' | code
     say "Binary packages produced by gtk2-ng:"
-    ls ./*.deb | code
+    find . -maxdepth 1 -name '*.deb' -printf '%f\n' | sort | code
     cp ./*.deb "$REPORT_DIR/" 2>/dev/null
     say "Reverse dependencies on the stock names that must keep resolving: see Provides above."
 else

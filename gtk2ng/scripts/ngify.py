@@ -171,8 +171,11 @@ def main():
     if not built:
         sys.exit("ngify: no package to convert")
 
-    # the metapackage: one name to install, and removing the stock names is what its
-    # Conflicts do; installing the distro's library again removes it with the rest
+    # The metapackage: one name to install. It has NO Conflicts with the distro's names: the
+    # libraries provide those names, and a package that conflicts with a name another package
+    # provides makes apt refuse the pair (the libraries carry the Conflicts/Replaces that swap
+    # the distro's packages). Installing the distro's library again removes the libraries and,
+    # because it depends on them, the metapackage too.
     version = next(iter(built.values()))[1]
     meta = "gtk2-" + F
     present = {}
@@ -183,8 +186,6 @@ def main():
     gir = sorted(n for n, (old, _v, _f) in built.items() if "gir1.2-gtk-2.0" in old)
     suggests = sorted(n for n, (old, _v, _f) in built.items()
                       if any(o in ("libgtk2.0-dev", "libgail-dev", "gtk2.0-examples") for o in old))
-    stock_runtime = ["libgtk2.0-0", "libgtk2.0-0t64", "libgtk2.0-common", "libgtk2.0-bin",
-                     "gtk2-engines-pixbuf", "libgail18", "libgail18t64", "libgail-common"]
     md = os.path.join(work, meta, "DEBIAN")
     os.makedirs(md)
     c = [("Package", meta), ("Version", version), ("Architecture", "all"), ("Section", "libs"),
@@ -192,7 +193,7 @@ def main():
          ("Depends", ", ".join("%s (= %s)" % (n, version) for n in runtime)),
          ("Recommends", ", ".join("%s (= %s)" % (n, version) for n in gir)),
          ("Suggests", ", ".join(suggests)),
-         ("Conflicts", ", ".join(stock_runtime + (["gtk2-ng"] if F == "king" else []))),
+         ("Conflicts", "gtk2-ng" if F == "king" else ""),
          ("Provides", "gtk2-ng" if F == "king" else ""),
          ("Replaces", "gtk2-ng" if F == "king" else "")]
     text = "".join("%s: %s\n" % (k, v) for k, v in c if v)
@@ -200,7 +201,7 @@ def main():
              " Installs the gtk2-%s libraries in place of the distro's GTK2. Applications\n"
              " that depend on the distro's package names keep working, because the\n"
              " gtk2-%s packages provide them. Installing the distro's libgtk2.0 again\n"
-             " removes this package and goes back to the distro's GTK2.\n") % (F, F, F)
+             " removes them and this package, and goes back to the distro's GTK2.\n") % (F, F, F)
     open(os.path.join(md, "control"), "w").write(text)
     outname = "%s_%s_all.deb" % (meta, version.replace(":", "%3a"))
     subprocess.check_call(["dpkg-deb", "--root-owner-group", "-b", os.path.dirname(md),

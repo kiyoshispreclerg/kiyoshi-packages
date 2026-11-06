@@ -57,7 +57,8 @@ step "The distro's GTK2 and kidesktop-core (baseline)"
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends build-essential pkg-config xvfb xauth curl ca-certificates \
     libgtk2.0-dev >/dev/null 2>&1 || bad "installing the distro's GTK2 and the tools"
-STOCKLIB="$(dpkg-query -W -f='${Package}\n' 'libgtk2.0-0*' | grep -v udeb | head -1)"
+# the installed one (libgtk2.0-0 or libgtk2.0-0t64): the pattern also matches names that are only provided
+STOCKLIB="$(dpkg-query -W -f='${Package} ${Status}\n' 'libgtk2.0-0*' 2>/dev/null | awk '/ install ok installed$/ && !/udeb/ {print $1; exit}')"
 STOCK_VER="$(dpkg-query -W -f='${Version}' "$STOCKLIB")"
 say "distro library: \`$STOCKLIB\` $STOCK_VER"
 # shellcheck disable=SC2046

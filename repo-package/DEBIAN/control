@@ -10,5 +10,5 @@ Description: kiyoshi-packages apt repository (key and sources)
  key and writes the apt source for this system's release (Ubuntu 22.04/24.04/26.04,
  Debian 12/13, Devuan 5/6). Removing the package removes both.
  .
- The XLibre channel (none, stable or beta) is asked on install and can be
+ The XLibre channel (beta or stable) is asked on install and can be
  changed with: sudo dpkg-reconfigure kiyoshi-packages-repo

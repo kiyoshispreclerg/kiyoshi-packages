@@ -10,13 +10,12 @@ each target, signed, and served from GitHub Pages.
 
 | System | Suite |
 |---|---|
-| Ubuntu 22.04 (Linux Mint 21) | `jammy` |
-| Ubuntu 24.04 (Linux Mint 22) | `noble` |
+| Ubuntu 22.04<br>Linux Mint 21 | `jammy` |
+| Ubuntu 24.04<br>Linux Mint 22 | `noble` |
 | Ubuntu 26.04 | `resolute` |
-| Debian 12 | `bookworm` |
-| Debian 13 (LMDE 7) | `trixie` |
+| Debian 12<br>Devuan 5 (Daedalus) | `bookworm` |
+| Debian 13<br>Devuan 6 (Excalibur)<br>LMDE 7 | `trixie` |
 
-Linux Mint 21 and 22 use the Ubuntu 22.04 and 24.04 suites (`jammy`, `noble`); Devuan 5 and 6 use the Debian 12 and 13 suites (`bookworm`, `trixie`).
 Architecture: `amd64`.
 
 ## Use it
@@ -27,7 +26,7 @@ Download [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyo
 and install it (double-click, or `sudo apt install ./kiyoshi-packages-repo_all.deb`).
 It installs the key and writes the apt source for your system (Ubuntu 22.04/24.04/26.04,
 Linux Mint 21/22, Debian 12/13, Devuan 5/6, LMDE 7); then `sudo apt update`. It asks which XLibre channel to
-enable (none, `stable` or `beta`); change it later with
+enable (`beta`, the default, or `stable`); change it later with
 `sudo dpkg-reconfigure kiyoshi-packages-repo`. Removing the package removes the
 source and the key.
 
@@ -60,7 +59,10 @@ names as theirs (`xserver-xlibre-core`, `xserver-xlibre-input-libinput`,
 | `beta` | XLibre 25.2.x and its drivers |
 | `main` | what both share (`x11proto-dev`) and the programs below |
 
-Enable **one** of `stable` and `beta`, not both.
+Enable **one** of `stable` and `beta`, not both. The default install from the
+repository package enables `beta` (XLibre 25.2); it asks via debconf, so you can
+choose `stable` instead, and switch any time with
+`sudo dpkg-reconfigure kiyoshi-packages-repo`.
 
 ### xserver-xis-core
 
@@ -83,6 +85,10 @@ drop-in replacement for the distribution's GTK2: same library, same ABI, the
 distribution's own packaging with the patches that still apply. The `gtk2-ng`
 metapackage swaps the distribution's GTK2 packages for ours. Programs that need
 `libgtk2.0-0` keep working, because our packages provide those names.
+
+An alternative is **GTK2-king**, Kiyoshi's fork of gtk2-ng with `X-DENSITY` support
+(`sudo apt install gtk2-king`), like XiS is to XLibre. Both packages are in the
+`main` component.
 
 ```sh
 sudo apt install gtk2-ng

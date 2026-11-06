@@ -10,13 +10,12 @@ compilado no GitHub para cada alvo, assinado e servido pelo GitHub Pages.
 
 | Sistema | Suite |
 |---|---|
-| Ubuntu 22.04 (Linux Mint 21) | `jammy` |
-| Ubuntu 24.04 (Linux Mint 22) | `noble` |
+| Ubuntu 22.04<br>Linux Mint 21 | `jammy` |
+| Ubuntu 24.04<br>Linux Mint 22 | `noble` |
 | Ubuntu 26.04 | `resolute` |
-| Debian 12 | `bookworm` |
-| Debian 13 (LMDE 7) | `trixie` |
+| Debian 12<br>Devuan 5 (Daedalus) | `bookworm` |
+| Debian 13<br>Devuan 6 (Excalibur)<br>LMDE 7 | `trixie` |
 
-Linux Mint 21 e 22 usam as suites do Ubuntu 22.04 e 24.04 (`jammy`, `noble`); Devuan 5 e 6 usam as suites do Debian 12 e 13 (`bookworm`, `trixie`).
 Arquitetura: `amd64`.
 
 ## Como usar
@@ -27,7 +26,7 @@ Baixe o [kiyoshi-packages-repo_all.deb](https://kiyoshispreclerg.github.io/kiyos
 e instale (duplo clique, ou `sudo apt install ./kiyoshi-packages-repo_all.deb`).
 Ele instala a chave e grava a fonte do apt do seu sistema (Ubuntu 22.04/24.04/26.04,
 Linux Mint 21/22, Debian 12/13, Devuan 5/6, LMDE 7); depois, `sudo apt update`. Ele pergunta qual canal do
-XLibre ativar (nenhum, `stable` ou `beta`); para mudar depois:
+XLibre ativar (`beta`, o padrão, ou `stable`); para mudar depois:
 `sudo dpkg-reconfigure kiyoshi-packages-repo`. Remover o pacote remove a fonte e a chave.
 
 ### Manualmente
@@ -38,7 +37,7 @@ sudo curl -fsSL -o /etc/apt/keyrings/kiyoshi-packages.gpg \
     https://kiyoshispreclerg.github.io/kiyoshi-packages/kiyoshi-packages.gpg
 
 # SUITE: jammy, noble, resolute, bookworm ou trixie
-# COMPONENTES: "main" só para os programas; some "stable" ou "beta" (um dos dois) para o XLibre
+# COMPONENTES: "main" só para os programas; mais "stable" ou "beta" (um dos dois) para o XLibre
 echo "deb [signed-by=/etc/apt/keyrings/kiyoshi-packages.gpg] https://kiyoshispreclerg.github.io/kiyoshi-packages SUITE main beta" |
     sudo tee /etc/apt/sources.list.d/kiyoshi-packages.list
 
@@ -60,7 +59,10 @@ mais um `x11proto-dev` mais novo.
 | `beta` | XLibre 25.2.x e seus drivers |
 | `main` | o que os dois dividem (`x11proto-dev`) e os programas abaixo |
 
-Ative **um só** entre `stable` e `beta`, não os dois.
+Ative **um só** entre `stable` e `beta`, não os dois. A instalação padrão pelo
+pacote do repositório ativa a `beta` (XLibre 25.2); ele pergunta via debconf, então
+você pode escolher a `stable`, e trocar quando quiser com
+`sudo dpkg-reconfigure kiyoshi-packages-repo`.
 
 ### xserver-xis-core
 
@@ -84,6 +86,10 @@ ABI, o empacotamento da própria distribuição com os patches que ainda aplicam
 metapacote `gtk2-ng` troca os pacotes de GTK2 da distribuição pelos nossos. Os
 programas que precisam do `libgtk2.0-0` continuam funcionando, porque os nossos
 pacotes fornecem esses nomes.
+
+Uma alternativa é o **GTK2-king**, o fork do gtk2-ng do Kiyoshi com suporte a
+`X-DENSITY` (`sudo apt install gtk2-king`), como o XiS é para o XLibre. Os dois
+pacotes estão no componente `main`.
 
 ```sh
 sudo apt install gtk2-ng

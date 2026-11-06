@@ -137,6 +137,13 @@ def main():
                 out.append(" | ".join(alts))
             put(fields, fld, ", ".join(out))
 
+        # The pixbuf engine plugs into GTK but the distro's package has no dependency on the
+        # library (its shlibdeps leaves it out), so nothing would remove ours when the distro's
+        # library comes back: make it depend on our library, and it leaves with it
+        if "gtk2-engines-pixbuf" in old_names:
+            cur = split_deps(get(fields, "Depends") or "")
+            put(fields, "Depends", ", ".join(cur + ["libgtk2-%s-0 (= %s)" % (F, version)]))
+
         # replaces the distro's package (and, for king, the ng one)
         stock = list(old_names)
         others = [newname(tmpl, "ng")] if F == "king" else []

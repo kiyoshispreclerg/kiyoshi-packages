@@ -63,8 +63,9 @@ jobs:
                   [ -n "$GTK2NG_REF" ] || unset GTK2NG_REF
                   [ -n "$GTK2NG_URL" ] || unset GTK2NG_URL
                   [ -n "$NG_REV" ] || unset NG_REV
-                  REPORT_DIR="$PWD/report" repo/gtk2ng/scripts/explore.sh
+                  REPORT_DIR="$PWD/report" repo/gtk2ng/scripts/explore.sh; rc=$?
                   cat report/summary.md >> "$GITHUB_STEP_SUMMARY"
+                  exit $rc
             - uses: actions/upload-artifact@v4
               if: always()
               with:

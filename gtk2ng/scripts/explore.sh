@@ -24,6 +24,10 @@ WORK="${WORK:-$PWD/gtk2ng-work}"
 TARGET="${ID}${VERSION_ID}"
 mkdir -p "$REPORT_DIR" "$WORK"
 R="$REPORT_DIR/summary.md"
+# Exit code: the run goes on after a failed step so the report is complete, but it ends
+# non-zero if a patch did not apply, the build or the packaging failed: a green job must
+# mean that every package was built from the whole set of patches
+RC=0
 : > "$R"
 
 say()  { printf '%s\n' "$*" | tee -a "$R"; }
@@ -60,7 +64,7 @@ if apt-get source --download-only -qq gtk+2.0 >/dev/null 2>&1; then
     say "debian/rules (configure flags):"
     grep -nE 'configure|--(enable|disable|with|without)-|dh_' stock/debian/rules | code
 else
-    say "FAILED: no gtk+2.0 source in this suite (apt-get source)"
+    say "FAILED: no gtk+2.0 source in this suite (apt-get source)"; RC=1
     STOCK_VER=""
 fi
 
@@ -101,7 +105,7 @@ if [ -n "$STOCK_VER" ]; then
         elif patch -d ng -p1 -R -s --dry-run < "$src" >/dev/null 2>&1; then
             say "- already in gtk2-ng: $p"
         else
-            say "- FAILS ($origin): $p"
+            say "- FAILS ($origin): $p"; RC=1
         fi
     done < stock/debian/patches/series
 fi
@@ -139,6 +143,7 @@ if [ -n "$STOCK_VER" ]; then
       DPKG_GENSYMBOLS_CHECK_LEVEL=0 DH_OPTIONS="-Nlibgtk2.0-doc -Nlibgail-doc" dpkg-buildpackage -b -uc -us -d >"$REPORT_DIR/build.log" 2>&1 )
     BUILD_RC=$?
     say "dpkg-buildpackage exit code: $BUILD_RC (full log: build.log)"
+    [ "$BUILD_RC" = 0 ] || RC=1
     tail -n 40 "$REPORT_DIR/build.log" | code
 else
     BUILD_RC=1
@@ -170,10 +175,12 @@ if [ "$BUILD_RC" = 0 ]; then
         say "Provides, Conflicts and Replaces of the library:"
         dpkg-deb -f "$WORK"/ngdebs/libgtk2-"$FLAVOR"-0_*.deb Provides Conflicts Replaces | code
     else
-        say "FAILED: ngify (ngify.log)"; tail -n 15 "$REPORT_DIR/ngify.log" | code
+        say "FAILED: ngify (ngify.log)"; RC=1; tail -n 15 "$REPORT_DIR/ngify.log" | code
     fi
 else
     say "skipped: the build failed"
 fi
 
 step "Done"
+if [ "$RC" = 0 ]; then say "no failures"; else say "**failures above: the job fails**"; fi
+exit "$RC"

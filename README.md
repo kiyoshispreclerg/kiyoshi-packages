@@ -75,6 +75,24 @@ sudo apt install xserver-xlibre-core    # XLibre
 sudo apt install xserver-xis-core        # XiS: replaces xserver-xlibre-core
 ```
 
+## GTK2-ng
+
+[gtk2-ng](https://git.devuan.org/Daemonratte/gtk2-ng) is the GTK2 revival
+project (GTK 2.24.33 kept alive), built here for every system in the table as a
+drop-in replacement for the distribution's GTK2: same library, same ABI, the
+distribution's own packaging with the patches that still apply. The `gtk2-ng`
+metapackage swaps the distribution's GTK2 packages for ours. Programs that need
+`libgtk2.0-0` keep working, because our packages provide those names.
+
+```sh
+sudo apt install gtk2-ng
+# to go back to the distribution's GTK2 (libgtk2.0-0t64 on Ubuntu 24.04/26.04 and Debian 13):
+sudo apt install libgtk2.0-0 libgtk2.0-common libgtk2.0-bin
+```
+
+The versions look like `2.24.33+git20260903-1ng1~ubuntu24.04`: the date is the
+one of the gtk2-ng commit they were built from.
+
 ## Programs
 
 | Package | |

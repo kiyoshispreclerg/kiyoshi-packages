@@ -1,9 +1,11 @@
-# Exploration of the gtk2-ng line: in a container of each target, shows how the
-# distro packages its GTK2, whether its patches apply to gtk2-ng, builds it with
-# that packaging and compares the ABI (job `explore`), then installs the result over
-# the distro's GTK2 and runs a GTK2 program (job `smoke`). Publishes nothing; the
-# result is the job summaries and the `gtk2ng-<target>` artifacts.
-name: GTK2-ng exploration
+# The gtk2-ng line: in a container of each target, shows how the distro packages its
+# GTK2, whether its patches apply to gtk2-ng, builds it with that packaging and
+# compares the ABI (job `explore`), then installs the result over the distro's GTK2,
+# runs GTK2 programs and goes back (job `smoke`). The result is the job summaries and
+# the `gtk2ng-<target>` artifacts. With `release` ticked, and only if every target
+# built and passed the smoke test, the packages go to the apt repository (component
+# main) and the Publish workflow runs.
+name: GTK2-ng
 
 on:
     workflow_dispatch:
@@ -19,6 +21,10 @@ on:
             rev:
                 description: 'Revision of the same source (1 gives ...-1ng1); empty = 1'
                 required: false
+            release:
+                description: 'Add the packages to the apt repository (only if all 5 targets build and pass the smoke test)'
+                type: boolean
+                default: false
             url:
                 description: 'gtk2-ng git URL; empty = kiyoshispreclerg/gtk2-ng (its master mirrors Devuan)'
                 required: false
@@ -103,3 +109,50 @@ jobs:
               with:
                   name: gtk2ng-smoke-${{ matrix.target }}
                   path: smoke-report/
+
+    release:
+        name: add to the apt repository
+        needs: [explore, smoke]
+        if: ${{ !cancelled() && !failure() && inputs.release }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        permissions:
+            contents: write
+        concurrency:
+            group: pool
+            cancel-in-progress: false
+        env:
+            GH_TOKEN: ${{ github.token }}
+        steps:
+            - uses: actions/download-artifact@v4
+              with:
+                  pattern: gtk2ng-*
+                  path: artifacts
+            - name: upload to the pool Release
+              run: |
+                  # Pool asset names: <file>.deb for component main. The suite comes from the
+                  # ~<target> at the end of the version (scripts/suite-of.sh).
+                  mkdir -p pool
+                  for d in artifacts/gtk2ng-*; do
+                      case "$(basename "$d")" in gtk2ng-smoke-*) continue ;; esac
+                      cp "$d"/*.deb pool/
+                  done
+                  for t in ubuntu22.04 ubuntu24.04 ubuntu26.04 debian12 debian13; do
+                      n="$(find pool -name "*~${t}_*.deb" | wc -l)"
+                      echo "$t: $n packages"
+                      [ "$n" -gt 0 ] || { echo "::error::no package for $t: not releasing"; exit 1; }
+                  done
+                  gh release view pool -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 ||
+                      gh release create pool -R "$GITHUB_REPOSITORY" --title pool \
+                          --notes "Todos os .deb do repositório apt. Gerenciado pelos workflows; não edite à mão."
+                  gh release upload pool -R "$GITHUB_REPOSITORY" --clobber pool/*.deb
+
+    publish:
+        needs: release
+        if: ${{ !cancelled() && needs.release.result == 'success' }}
+        uses: ./.github/workflows/publish.yml
+        secrets: inherit
+        permissions:
+            contents: read
+            pages: write
+            id-token: write

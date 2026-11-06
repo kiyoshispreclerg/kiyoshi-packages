@@ -156,6 +156,7 @@ def main():
             put(fields, fld, ", ".join(cur + stock + others), after="Provides")
 
         put(fields, "Package", new)
+        put(fields, "Source", "gtk2-" + F)
         put(fields, "Maintainer", MAINTAINER)
         desc = get(fields, "Description").split("\n")
         desc[0] += " (gtk2-%s)" % F
@@ -195,7 +196,7 @@ def main():
                       if any(o in ("libgtk2.0-dev", "libgail-dev", "gtk2.0-examples") for o in old))
     md = os.path.join(work, meta, "DEBIAN")
     os.makedirs(md)
-    c = [("Package", meta), ("Version", version), ("Architecture", "all"), ("Section", "libs"),
+    c = [("Package", meta), ("Source", meta), ("Version", version), ("Architecture", "all"), ("Section", "libs"),
          ("Priority", "optional"), ("Maintainer", MAINTAINER),
          ("Depends", ", ".join("%s (= %s)" % (n, version) for n in runtime)),
          ("Recommends", ", ".join("%s (= %s)" % (n, version) for n in gir)),

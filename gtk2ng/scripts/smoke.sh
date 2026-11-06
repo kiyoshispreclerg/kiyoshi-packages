@@ -48,7 +48,8 @@ run_app() { # LABEL COMMAND...
     if [ "$rc" = 124 ]; then ok "$label ran for 6 s"; else bad "$label exited with $rc"; fi
 }
 # installed packages of the gtk2-ng line (gtk2-ng, libgtk2-ng-0, libgail-ng-18, gir1.2-gtk-2.0-ng, ...)
-ng_installed() { dpkg-query -W -f='${Package}\n' 2>/dev/null | grep -cE "(^|-)(ng|king)(-|$)"; }
+# (only the really installed ones: a removed package that left conffiles is state rc)
+ng_installed() { dpkg-query -W -f='${Package} ${Status}\n' 2>/dev/null | awk '/ install ok installed$/ {print $1}' | grep -cE "(^|-)(ng|king)(-|$)"; }
 
 step "Target: $PRETTY_NAME (gtk2-$FLAVOR)"
 find "$DEBS" -maxdepth 1 -name '*.deb' ! -name '*dbgsym*' -printf '- %f\n' | sort | tee -a "$R" >/dev/null
@@ -83,7 +84,9 @@ step "Install the gtk2-$FLAVOR packages"
 mapfile -t NG < <(find "$DEBS" -maxdepth 1 -name '*.deb' ! -name '*dbgsym*' | sort)
 # one apt call with every package, as a user would do `apt install gtk2-ng` (the metapackage
 # is in the list): apt has to remove the distro's libraries by itself
-if apt-get install -y "${NG[@]}" >"$REPORT_DIR/install.log" 2>&1; then ok "apt install of ${#NG[@]} packages"
+if [ "${#NG[@]}" = 0 ]; then
+    bad "no gtk2-$FLAVOR .deb in $DEBS: the build job produced no packages"
+elif apt-get install -y "${NG[@]}" >"$REPORT_DIR/install.log" 2>&1; then ok "apt install of ${#NG[@]} packages"
 else bad "apt install of the gtk2-$FLAVOR packages"; tail -n 20 "$REPORT_DIR/install.log" | tee -a "$R"; fi
 say "gtk2-$FLAVOR packages installed: $(ng_installed)"
 dpkg -l | grep -E 'libgtk2|libgail|gtk2-|gir1.2-gtk-2' | awk '{print "- " $2 " " $3}' | tee -a "$R" >/dev/null

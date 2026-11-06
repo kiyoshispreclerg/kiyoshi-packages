@@ -175,18 +175,16 @@ Origin: debian/patches/menubar_toolbar_dragging.patch, refreshed for gtk2-ng
  				GdkEventExpose *event)
 --- a/gtk/gtktoolbar.c
 +++ b/gtk/gtktoolbar.c
-@@ -2698,6 +2698,10 @@
+@@ -2698,6 +2698,8 @@
  gtk_toolbar_button_press (GtkWidget      *toolbar,
      			  GdkEventButton *event)
  {
 +  GtkWidget *window;
 +
-+  GtkWidget *window;
-+
    if (_gtk_button_event_triggers_context_menu (event))
      {
        gboolean return_value;
-@@ -2709,6 +2713,28 @@
+@@ -2709,6 +2711,28 @@
        return return_value;
      }
  

@@ -21,10 +21,11 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
  };
  
  G_DEFINE_TYPE_WITH_PRIVATE (GtkImage, gtk_image, GTK_TYPE_MISC)
-@@ -350,6 +352,24 @@
+@@ -349,8 +351,27 @@
+                                                       GTK_TYPE_IMAGE_TYPE,
                                                        GTK_IMAGE_EMPTY,
                                                        GTK_PARAM_READABLE));
- }
++
 +  /**
 +   * GtkImage:use-fallback:
 +   *
@@ -42,11 +43,13 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
 +                                                         P_("Whether to use icon names fallback"),
 +                                                         FALSE,
 +                                                         GTK_PARAM_READWRITE));
-+
+ }
  
++
  static void
  gtk_image_init (GtkImage *image)
-@@ -384,8 +404,10 @@
+ {
+@@ -384,8 +405,10 @@
  			GParamSpec   *pspec)
  {
    GtkImage *image;
@@ -57,7 +60,7 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
  
    switch (prop_id)
      {
-@@ -474,6 +496,18 @@
+@@ -474,6 +497,18 @@
  				image->icon_size);
        break;
  
@@ -76,7 +79,7 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
-@@ -572,6 +606,10 @@
+@@ -572,6 +607,10 @@
        g_value_set_enum (value, image->storage_type);
        break;
  
@@ -87,7 +90,7 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
-@@ -1664,6 +1702,8 @@
+@@ -1664,6 +1703,8 @@
    icon_theme = gtk_icon_theme_get_for_screen (screen);
    settings = gtk_settings_get_for_screen (screen);
    flags = GTK_ICON_LOOKUP_USE_BUILTIN;
@@ -96,7 +99,7 @@ Origin: debian/patches/093_gtk3_gtkimage_fallbacks_use.patch, refreshed for gtk2
    if (image->data.name.pixbuf == NULL)
      {
        if (priv->pixel_size != -1)
-@@ -1747,6 +1787,8 @@
+@@ -1747,6 +1788,8 @@
    icon_theme = gtk_icon_theme_get_for_screen (screen);
    settings = gtk_settings_get_for_screen (screen);
    flags = GTK_ICON_LOOKUP_USE_BUILTIN;

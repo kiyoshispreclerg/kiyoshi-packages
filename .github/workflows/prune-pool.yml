@@ -1,0 +1,34 @@
+# Deletes the old versions from the `pool` Release (a Release holds at most 1000
+# assets). The build and ingest workflows already do this around their uploads;
+# this one is for running it by hand, e.g. with "dry run" to see what would go.
+name: Prune pool
+
+on:
+    workflow_dispatch:
+        inputs:
+            dry_run:
+                description: Only list what would be deleted
+                type: boolean
+                default: true
+            keep:
+                description: Versions to keep per package
+                default: '2'
+
+permissions:
+    contents: write   # delete assets of the pool Release
+
+concurrency:
+    group: pool
+    cancel-in-progress: false
+
+jobs:
+    prune:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        env:
+            GH_TOKEN: ${{ github.token }}
+            KEEP: ${{ inputs.keep }}
+            DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        steps:
+            - uses: actions/checkout@v4
+            - run: scripts/prune-pool.sh

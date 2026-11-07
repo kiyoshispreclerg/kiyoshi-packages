@@ -26,7 +26,7 @@ for row in "${rows[@]}"; do
     base="${name%.deb}"; comp=main
     case "$base" in stable--*) comp=stable; base="${base#stable--}" ;; beta--*) comp=beta; base="${base#beta--}" ;; esac
     IFS=_ read -r pkg ver arch extra <<<"$base"
-    [ -n "$pkg" ] && [ -n "$ver" ] && [ -n "$arch" ] && [ -z "${extra:-}" ] || continue
+    if [ -z "$pkg" ] || [ -z "$ver" ] || [ -z "$arch" ] || [ -n "${extra:-}" ]; then continue; fi
     [[ "$ver" =~ ^(.+)\.(ubuntu[0-9.]+|debian[0-9]+)$ ]] || continue
     # group \t version-without-tag \t id \t name
     lines+=("$comp|${BASH_REMATCH[2]}|$pkg|$arch"$'\t'"${BASH_REMATCH[1]}"$'\t'"$id"$'\t'"$name")
@@ -38,7 +38,7 @@ done
 deleted=0
 prev=""; group=()
 flush() {
-    local n=${#group[@]} i f
+    local n=${#group[@]} i
     if [ "$n" -gt "$keep" ]; then
         for ((i = 0; i < n - keep; i++)); do
             IFS=$'\t' read -r _ _ id name <<<"${group[i]}"

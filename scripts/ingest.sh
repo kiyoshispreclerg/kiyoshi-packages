@@ -48,6 +48,9 @@ gh release view pool -R "$self" >/dev/null 2>&1 ||
     gh release create pool -R "$self" --title "pool" \
         --notes "Todos os .deb do repositório apt. Gerenciado por scripts/ingest.sh; não edite à mão."
 
+# A Release holds at most 1000 assets: make room before uploading.
+"$here/prune-pool.sh"
+
 # GitHub rewrites characters it dislikes in asset names (`~` becomes `.`), so
 # names are compared in that normalized form.
 gh_name() { echo "${1//[^A-Za-z0-9._+-]/.}"; }
@@ -91,3 +94,5 @@ for name in $(yq -r '.projects[].name' packages.yml); do
         existing+=$'\n'"$(gh_name "$b")"
     done
 done
+
+"$here/prune-pool.sh"

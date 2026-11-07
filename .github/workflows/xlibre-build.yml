@@ -200,6 +200,7 @@ jobs:
             GH_TOKEN: ${{ github.token }}
             PARTIAL: ${{ inputs.only != '' || needs.plan.outputs.commit == 'true' }}
         steps:
+            - uses: actions/checkout@v4
             - uses: actions/download-artifact@v4
               with:
                   pattern: xlibre-debs-*
@@ -226,7 +227,10 @@ jobs:
                           done
                       done
                   done
+                  # a Release holds at most 1000 assets: make room first, trim again after
+                  scripts/prune-pool.sh
                   gh release upload pool -R "$GITHUB_REPOSITORY" --clobber pool/*.deb
+                  scripts/prune-pool.sh
 
     publish:
         needs: release

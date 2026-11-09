@@ -21,7 +21,8 @@ if [ "${FILL_FROM_POOL:-}" = true ]; then
     step "fill in the packages that were not rebuilt from the pool Release"
     . /etc/os-release
     tag="?${ID}${VERSION_ID}_"   # GitHub turns the ~ of an asset name into a dot
-    built="$(for f in "$debs"/*.deb; do dpkg-deb -f "$f" Package; done | sort -u)"
+    # the artifact has one subdirectory per component (beta/, main/), so look in all of them
+    built="$(find "$debs" -name '*.deb' -exec dpkg-deb -f {} Package \; | sort -u)"
     curl -fsSL ${GH_TOKEN:+-H "Authorization: Bearer $GH_TOKEN"} \
         "https://api.github.com/repos/${GITHUB_REPOSITORY:?}/releases/tags/pool" |
         jq -r '.assets[] | select(.name | endswith(".deb")) | "\(.name) \(.browser_download_url)"' |

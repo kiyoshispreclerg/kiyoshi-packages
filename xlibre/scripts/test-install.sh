@@ -20,7 +20,7 @@ apt-get install -y --no-install-recommends dpkg-dev ca-certificates curl jq >/de
 if [ "${FILL_FROM_POOL:-}" = true ]; then
     step "fill in the packages that were not rebuilt from the pool Release"
     . /etc/os-release
-    tag="?${ID}${VERSION_ID}_"   # GitHub turns the ~ of an asset name into a dot
+    tag="${ID}${VERSION_ID}_"    # asset names: ...<ver>.ubuntu24.04_amd64.deb (GitHub turns the ~ into a dot)
     # the artifact has one subdirectory per component (beta/, main/), so look in all of them
     built="$(find "$debs" -name '*.deb' -exec dpkg-deb -f {} Package \; | sort -u)"
     curl -fsSL ${GH_TOKEN:+-H "Authorization: Bearer $GH_TOKEN"} \
@@ -31,7 +31,7 @@ if [ "${FILL_FROM_POOL:-}" = true ]; then
             "${POOL_CHANNEL:?}--"*) ;;
             *--*) continue ;;   # the other channel
         esac
-        case "$name" in *"$tag"*) ;; *) continue ;; esac
+        case "$name" in *".$tag"*) ;; *) continue ;; esac
         tmp="$(mktemp)"; curl -fsSL -o "$tmp" "$url"
         grep -qxF "$(dpkg-deb -f "$tmp" Package)" <<<"$built" && { rm -f "$tmp"; continue; }
         mv "$tmp" "$debs/${name#*--}"
